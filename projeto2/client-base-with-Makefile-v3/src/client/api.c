@@ -138,6 +138,18 @@ int pacman_disconnect() {
   return 0;
 }
 
+int readfull(int fd, void* buffer, size_t size){
+    size_t total = 0;
+    while(total < size){
+        int r = read(fd, buffer + total, size - total);
+        if(r <=0){
+            return r;
+        }
+        total += r;
+    }
+    return total;
+}
+
 Board receive_board_update(void) {
   BoardHeader new_boardheader;
   Board new_board;
@@ -156,11 +168,13 @@ Board receive_board_update(void) {
       perror("notif pipe not opened");
       return new_board;
   }
-  if(read(session.notif_pipe, &new_boardheader, sizeof(BoardHeader)) != sizeof(BoardHeader)){
+  
+  if(readfull(session.notif_pipe, &new_boardheader, sizeof(BoardHeader)) != sizeof(BoardHeader)){
       perror("read board from notif pipe");
       new_board.data = NULL;
       return new_board;
   }
+
 
   new_board.width = new_boardheader.width;
   new_board.height = new_boardheader.height;
@@ -170,10 +184,16 @@ Board receive_board_update(void) {
   new_board.accumulated_points = new_boardheader.accumulated_points;
   new_board.data = malloc(new_boardheader.data_size);
 
-  if(read(session.notif_pipe, new_board.data, new_boardheader.data_size) != new_boardheader.data_size){
+
+  if (!new_board.data) {
+    perror("malloc");
+    return new_board;
+  }
+  if(readfull(session.notif_pipe, new_board.data, new_boardheader.data_size) != new_boardheader.data_size){
       perror("read board data from notif pipe");
       free(new_board.data);
       new_board.data = NULL;
+      return new_board;
   }
   return new_board;
 }
