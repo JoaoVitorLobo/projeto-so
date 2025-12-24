@@ -1,0 +1,20 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/projeto2/server/include",
+        "${workspaceFolder}/projeto2/server/src",
+        "${workspaceFolder}/projeto2/client/include",
+        "${workspaceFolder}/projeto2/client/src",
+        "/usr/include",
+        "/usr/local/include"
+      ],
+      "defines": ["_POSIX_C_SOURCE=200809L"],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c17",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
+}

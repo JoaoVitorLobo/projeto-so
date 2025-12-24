@@ -57,7 +57,7 @@ int create_backup() {
 }
 
 void screen_refresh(board_t * game_board, int mode) {
-    debug("REFRESH\n");
+    //debug("REFRESH\n");
     draw_board(game_board, mode);
     refresh_screen();     
 }
@@ -99,11 +99,13 @@ void* pacman_thread(void *arg) {
         char buffer[1];
         read_full(client_request_fd, buffer, 1);
         int op_code = buffer[0];
+        debug("READ OP_CODE %d\n", op_code);
         if(op_code == OP_CODE_DISCONNECT){
             *retval = QUIT_GAME;
             return (void*) retval;
         }
         read_full(client_request_fd, buffer, 1);
+        debug("READ COMMAND %c\n", buffer[0]);
         char command = buffer[0];
 
         command_t* play;
@@ -179,7 +181,22 @@ void* individual_session_thread(void *session_args) {
     char *client_request_pipe = thread_arg->client_request_pipe;
     char *client_notification_pipe = thread_arg->client_notification_pipe;
 
-    
+    debug("INDIVIDUAL SESSION THREAD\n");
+
+    char message[2];
+    message[0] = (char)('0' + OP_CODE_CONNECT);
+
+    int client_notification_fd = open(client_notification_pipe, O_WRONLY);
+    if (client_notification_fd < 0) {
+        perror("open client fifo");
+        message[1] = '1'; 
+        return NULL;
+    }
+    message[1] = '0'; 
+    debug("Sending return message to connect (2 bytes): op=%c result=%c\n", message[0], message[1]);
+    write(client_notification_fd, message, sizeof(message));
+    close(client_notification_fd);
+
     int accumulated_points = 0;
     bool end_game = false;
     board_t game_board;
@@ -350,6 +367,14 @@ void* individual_session_thread(void *session_args) {
                     perror("open client fifo");
                     return NULL;
                 }
+                debug("Sending return message to connect (%d bytes): op=%c width=%d height=%d tempo: %d victory: %d game_over: %d accumulated_points: %d\n", data_size, message[0], game_board.width, game_board.height, game_board.tempo, vic, eg, accumulated_points);
+                for (int lin = 0; lin < game_board.height; lin++) {
+                    for (int col = 0; col < game_board.width; col++) {
+                        debug("%c", game_board.board[lin * game_board.width + col]);
+                    }
+                    debug("\n");
+                }
+
                 write(client_notification_fd, message, data_size);
                 close(client_notification_fd);
             }
@@ -405,10 +430,11 @@ int main(int argc, char** argv) {
     debug("AFTER Read from register fifo: %s\n", buffer);
 
     char op_code = buffer[0];
-    if(op_code != '1'){
+    if(op_code != (char)('0' + OP_CODE_CONNECT)){
         perror("op_code");
         return 1;
     }
+    op_code = op_code - '0';
     char client_request_pipe[41];
     char client_notification_pipe[41];
 
@@ -418,11 +444,11 @@ int main(int argc, char** argv) {
     memcpy(client_notification_pipe, buffer + 41, 40);
     client_notification_pipe[40] = '\0';
 
-        
-    open_debug_file("debug.log");
+    debug("op_code: %d\n", op_code);
+    debug("client_request_pipe: %s\n", client_request_pipe);
+    debug("client_notification_pipe: %s\n", client_notification_pipe);
 
-
-    
+    debug("BEFORE Creating session manager thread\n");
 
     session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t));
     session_args->level_dir_name = argv[1];
@@ -432,6 +458,7 @@ int main(int argc, char** argv) {
 
 
     pthread_t session_manager_thread;
+    debug("BEFORE Creating session manager thread\n");
     pthread_create(&session_manager_thread, NULL, individual_session_thread, session_args);
     
     pthread_join(session_manager_thread, NULL);

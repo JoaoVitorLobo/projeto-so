@@ -1,0 +1,15 @@
+BEFORE CONNECT
+Client ID: 1
+Creating client fifos
+Created client fifos
+Opened server pipe: ../server/server_register_fifo
+Sending connect message (81 bytes): op=1 req=[/tmp/1_request] notif=[/tmp/1_notification]
+Sent connect message to server pipe
+Closed server pipe: server_register_fifo
+Opened notif pipe: /tmp/1_notification
+Connect result: 0
+AFTER CONNECT
+initial_bufer: 
+Received board update notification
+OP_CODE: 0 Returning receiver thread...
+Opened req pipe: /tmp/1_request - disconnect

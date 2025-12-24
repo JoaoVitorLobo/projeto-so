@@ -1,0 +1,22 @@
+opening level dir: teste
+unlink fifo: server_register_fifo
+Creating register fifo: server_register_fifo
+Opening register fifo: server_register_fifo
+Opened register fifo: server_register_fifo
+BEFORE Reading register fifo: server_register_fifo
+AFTER Read from register fifo: 1/tmp/1_request
+op_code: 1
+client_request_pipe: /tmp/1_request
+client_notification_pipe: /tmp/1_notification
+BEFORE Creating session manager thread
+BEFORE Creating session manager thread
+INDIVIDUAL SESSION THREAD
+Sending return message to connect (2 bytes): op=1 result=0
+MON file: teste/monster1.m
+MON file: teste/monster2.m
+Ghost passo: 0
+Ghost Pos = 4 x 5
+Ghost passo: 0
+Ghost Pos = 8 x 5
+Creating threads
+READ OP_CODE 2

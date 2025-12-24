@@ -1,4 +1,0 @@
-opening level dir: teste
-unlink fifo: server_register_fifo
-Creating register fifo: server_register_fifo
-Opening register fifo: server_register_fifo

@@ -43,7 +43,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
             if (arg1 && arg2) {
                 board->width = atoi(arg1);
                 board->height = atoi(arg2);
-                debug("DIM = %d x %d\n", board->width, board->height);
+                //debug("DIM = %d x %d\n", board->width, board->height);
             }
         }
 
@@ -51,7 +51,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
             char *arg = strtok(NULL, " \t\n");
             if (arg) {
                 board->tempo = atoi(arg);
-                debug("TEMPO = %d\n", board->tempo);
+                //debug("TEMPO = %d\n", board->tempo);
             }
         }
 
@@ -97,7 +97,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
         if (command[0]== '#' || command[0] == '\0') continue;
         if (row >= board->height) break;
 
-        debug("Line: %s\n", command);
+        //debug("Line: %s\n", command);
 
         for (int col = 0; col < board -> width; col++){
             int idx = row * board->width + col;
