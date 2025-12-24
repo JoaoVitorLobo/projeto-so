@@ -17,7 +17,7 @@ CLIENT = client
 
 
 #Client objects
-OBJS_CLIENT = client_main.o debug.o api.o display.o
+OBJS_CLIENT = client_main.o debug.o api.o display.o utils.o
 
 # Dependencies
 display.o = display.h

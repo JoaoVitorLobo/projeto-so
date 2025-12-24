@@ -11,7 +11,7 @@ typedef struct {
   char* data;
 } Board;
 
-typedef struct {
+/*typedef struct {
   int width;
   int height;
   int tempo;
@@ -19,9 +19,9 @@ typedef struct {
   int game_over;
   int accumulated_points;
   int data_size;
-} BoardHeader;
+} BoardHeader;*/
 
-int pacman_connect(char const *req_pipe_path, char const *notif_pipe_path, char const *server_pipe_path);
+int pacman_connect(char const id_client, char const *req_pipe_path, char const *notif_pipe_path, char const *server_pipe_path);
 
 void pacman_play(char command);
 

@@ -1,5 +1,6 @@
 #include "board.h"
 #include "display.h"
+#include "protocol.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -95,10 +96,15 @@ void* pacman_thread(void *arg) {
         sleep_ms(board->tempo * (1 + pacman->passo));
 
         int client_request_fd = open(client_request_pipe, O_RDONLY);
-        char buffer[2];
-        read(client_request_fd, buffer, 2);
+        char buffer[1];
+        read_full(client_request_fd, buffer, 1);
         int op_code = buffer[0];
-        char command = buffer[1];
+        if(op_code == OP_CODE_DISCONNECT){
+            *retval = QUIT_GAME;
+            return (void*) retval;
+        }
+        read_full(client_request_fd, buffer, 1);
+        char command = buffer[0];
 
         command_t* play;
         command_t c;
@@ -190,7 +196,7 @@ void* individual_session_thread(void *session_args) {
         if (strcmp(dot, ".lvl") == 0) {
             load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
             while(true) {
-                pthread_t ncurses_tid, pacman_tid;
+                pthread_t /*ncurses_tid,*/ pacman_tid;
                 pthread_t *ghost_tids = malloc(game_board.n_ghosts * sizeof(pthread_t));
 
                 thread_shutdown = 0;
@@ -209,7 +215,7 @@ void* individual_session_thread(void *session_args) {
                     arg->ghost_index = i;
                     pthread_create(&ghost_tids[i], NULL, ghost_thread, (void*) arg);
                 }
-                pthread_create(&ncurses_tid, NULL, ncurses_thread, (void*) &game_board);
+                //pthread_create(&ncurses_tid, NULL, ncurses_thread, (void*) &game_board);
 
                 int *retval;
                 pthread_join(pacman_tid, (void**)&retval);
@@ -218,12 +224,13 @@ void* individual_session_thread(void *session_args) {
                 thread_shutdown = 1;
                 pthread_rwlock_unlock(&game_board.state_lock);
 
-                pthread_join(ncurses_tid, NULL);
+                //pthread_join(ncurses_tid, NULL);
                 for (int i = 0; i < game_board.n_ghosts; i++) {
                     pthread_join(ghost_tids[i], NULL);
                 }
 
                 free(ghost_tids);
+                free(pacman_arg);
 
                 int result = *retval;
                 free(retval);
@@ -305,7 +312,7 @@ void* individual_session_thread(void *session_args) {
                 char *ptr = message;
 
                 // op_code (1 byte)
-                *ptr = '4';
+                *ptr = OP_CODE_BOARD; //OP_CODE_BOARD
                 ptr += 1;
 
 
@@ -341,7 +348,7 @@ void* individual_session_thread(void *session_args) {
                 int client_notification_fd = open(client_notification_pipe, O_WRONLY);
                 if (client_notification_fd < 0) {
                     perror("open client fifo");
-                    return;
+                    return NULL;
                 }
                 write(client_notification_fd, message, data_size);
                 close(client_notification_fd);
@@ -354,7 +361,7 @@ void* individual_session_thread(void *session_args) {
 }
 
 int main(int argc, char** argv) {
-    if ( argc != 4) {
+    if ( argc < 4) {
         fprintf(stderr,
             "Usage: %s <levels_dir> <max_games> <nome_do_FIFO_de_registo>\n",
             argv[0]);
@@ -363,8 +370,15 @@ int main(int argc, char** argv) {
 
     // Random seed for any random movements
     srand((unsigned int)time(NULL));
+    open_debug_file("debug_server.log");
 
+    debug("opening level dir: %s\n", argv[1]);
     DIR* level_dir = opendir(argv[1]);
+    if (level_dir == NULL) {
+        perror("opendir");
+        return -1;
+    }
+
     //int max_games = atoi(argv[2]);
     char* register_pipe_name = argv[3];
 
@@ -373,16 +387,22 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-
+    debug("unlink fifo: %s\n", register_pipe_name);
+    unlink(register_pipe_name); // Unlink existing pipe
+    debug("Creating register fifo: %s\n", register_pipe_name);
     if(mkfifo(register_pipe_name, 0666) == -1){
         perror("mkfifo");
         return 1;  
     }
 
+    debug("Opening register fifo: %s\n", register_pipe_name);
     int register_pipe_fd = open(register_pipe_name, O_RDONLY);
+    debug("Opened register fifo: %s\n", register_pipe_name);
     char buffer[81];
     //int n_bytes_read = 0;
+    debug("BEFORE Reading register fifo: %s\n", register_pipe_name);
     read(register_pipe_fd, buffer, 81);
+    debug("AFTER Read from register fifo: %s\n", buffer);
 
     char op_code = buffer[0];
     if(op_code != '1'){
@@ -424,6 +444,9 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Failed to close directory\n");
         return 0;
     }
+
+    unlink(register_pipe_name);
+    free(session_args);
 
     return 0;
 }

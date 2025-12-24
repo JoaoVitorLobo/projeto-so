@@ -1,6 +1,7 @@
 #include "api.h"
 #include "protocol.h"
 #include "debug.h"
+#include "utils.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -11,7 +12,7 @@
 
 
 struct Session {
-  int id;
+  int id; //id
   int req_pipe;
   int notif_pipe;
   char req_pipe_path[MAX_PIPE_PATH_LENGTH + 1];
@@ -20,180 +21,137 @@ struct Session {
 
 static struct Session session = {.id = -1};
 
-int pacman_connect(char const *req_pipe_path, char const *notif_pipe_path, char const *server_pipe_path) {
-  int id;
-  unlink(req_pipe_path); // Unlink existing pipe
-  unlink(notif_pipe_path); // Unlink existing pipe
-  int mkfifo_req = mkfifo(req_pipe_path, 0666);
-  int mkfifo_notif = mkfifo(notif_pipe_path, 0666);
-  int mkfifo_server = mkfifo(server_pipe_path, 0666);
-  if(mkfifo_req <0){
-      perror("mkfifo");
-      return 1;
-  }
-  if(mkfifo_notif <0){
-      perror("mkfifo");
-      close(mkfifo_req);
-      return 1;
-  }
-  if(mkfifo_server <0){
-      perror("mkfifo");
-      close(mkfifo_req);
-      close(mkfifo_notif);
-      return 1;
-  }
-  int server_pipe = open(server_pipe_path, O_WRONLY);
-  if(server_pipe <0){
-      perror("open server pipe");
-      close(mkfifo_req);
-      close(mkfifo_notif);
-      return 1;
-  }
-  
-  session.req_pipe = -1; //ainda não abertos
-  session.notif_pipe = -1;
+int pacman_connect(char const id_client, char const *req_pipe_path, char const *notif_pipe_path, char const *server_pipe_path) {
+    session.id = id_client - '0'; //convert char to int
+    debug("Client ID: %d\n", session.id);
 
-  strncpy(session.req_pipe_path, req_pipe_path, MAX_PIPE_PATH_LENGTH);
-  session.req_pipe_path[MAX_PIPE_PATH_LENGTH] = '\0';//garantir terminação
-  strncpy(session.notif_pipe_path, notif_pipe_path, MAX_PIPE_PATH_LENGTH);
-  session.notif_pipe_path[MAX_PIPE_PATH_LENGTH] = '\0';//garantir terminação
+    strncpy(session.req_pipe_path, req_pipe_path, MAX_PIPE_PATH_LENGTH);
+    session.req_pipe_path[MAX_PIPE_PATH_LENGTH] = '\0';//garantir terminação
+    strncpy(session.notif_pipe_path, notif_pipe_path, MAX_PIPE_PATH_LENGTH);
+    session.notif_pipe_path[MAX_PIPE_PATH_LENGTH] = '\0';//garantir terminação
 
-  if(write(server_pipe, &session, sizeof(struct Session))!= sizeof(struct Session)){
-      perror("write to server pipe");
-      close(mkfifo_req);
-      close(mkfifo_notif);
-      close(mkfifo_server);
-      return 1;
-  }
+    unlink(req_pipe_path); // Unlink existing pipe
+    unlink(notif_pipe_path); // Unlink existing pipe
 
-  close(server_pipe);
+    mkfifo(req_pipe_path, 0666);
+    mkfifo(notif_pipe_path, 0666);
 
-  int notif_pipe = open(notif_pipe_path, O_RDONLY);
-  if(notif_pipe <0){  
-      perror("open notif pipe");
-      close(mkfifo_req);
-      close(mkfifo_notif); 
-      return 1;
-  }
-  int req_pipe = open(req_pipe_path, O_WRONLY);
-  if(req_pipe <0){
-      perror("open req pipe");
-      close(mkfifo_req);
-      close(mkfifo_notif);
-      close(notif_pipe);
-      return 1;
-  }
-  
-  if(read(notif_pipe, &id, sizeof(int))!= sizeof(int)){
-      perror("read id from notif pipe");
-      close(req_pipe);
-      close(notif_pipe);
-      close(mkfifo_req);
-      close(mkfifo_notif);
-      return 1;
-  }
-  session.id = id;
-  session.req_pipe = req_pipe;
-  session.notif_pipe = notif_pipe;
-  return 0;
+    int req_pipe_fd = open(req_pipe_path, O_WRONLY);
+    int notif_pipe_fd = open(notif_pipe_path, O_RDONLY);
+    int server_pipe_fd = open(server_pipe_path, O_WRONLY);
+
+    
+    session.req_pipe = req_pipe_fd; //ainda não abertos
+    session.notif_pipe = notif_pipe_fd;
+
+    char message[81];
+    message[0] = OP_CODE_CONNECT;
+    memcpy(message + 1, req_pipe_path, 40);
+    memcpy(message + 41, notif_pipe_path, 40);
+
+    write_full(server_pipe_fd, message, 81);
+
+    close(server_pipe_fd);
+
+
+    char buffer[2];
+    read_full(session.notif_pipe, buffer, 2);
+    //int op_code = buffer[0];
+    char result = buffer[1];
+
+    return result;
 }
 
-void pacman_play(char command) {
-  if(session.req_pipe <0 || session.id < 0){
-      perror("req pipe not opened");
-      return;
-  }
-  if(write(session.req_pipe, &command, sizeof(char))!= sizeof(char)){
-      perror("write command to req pipe");
-      return;
-  }
+  void pacman_play(char command) {
+    char msg[2];
+    msg[0] = OP_CODE_PLAY;
+    msg[1] = command;
 
+    if(write_full(session.req_pipe, msg, sizeof(msg))!= sizeof(msg)){
+        perror("write command to req pipe");
+        return;
+    }
 }
 
 int pacman_disconnect() {
-  if(session.id < 0 || session.req_pipe < 0 || session.notif_pipe < 0){
-      perror("no active session");
-      return 1;
-  }
+    char msg[1] = {OP_CODE_DISCONNECT};
+    if (write_full(session.req_pipe, msg, sizeof(char)) != sizeof(msg)) {
+        perror("write disconnect command to req pipe");
+        return 1;
+    }
+    
+    if (close(session.req_pipe)){
+        perror("close req pipe");
+        return 1;
+    }
+    if(close(session.notif_pipe)){
+        perror("close notif pipe");
+        return 1;
+    }
 
-  int msg = OP_CODE_DISCONNECT;
-  if(write(session.req_pipe, &msg, sizeof(int))!= sizeof(int)){
-      fprintf(stderr, "write disconnect command to req pipe");
-  }
-  
-  if (close(session.req_pipe)){
-      fprintf(stderr, "close req pipe");
-  }
-  if(close(session.notif_pipe)){
-      fprintf(stderr, "close notif pipe");
-  }
+    unlink(session.req_pipe_path);
+    unlink(session.notif_pipe_path);
 
-  unlink(session.req_pipe_path);
-  unlink(session.notif_pipe_path);
+    session.id = -1;
+    session.req_pipe = -1;
+    session.notif_pipe = -1;
 
-  session.id = -1;
-  session.req_pipe = -1;
-  session.notif_pipe = -1;
-
-  return 0;
+    return 0;
 }
 
-int readfull(int fd, void* buffer, size_t size){
-    size_t total = 0;
-    while(total < size){
-        int r = read(fd, buffer + total, size - total);
-        if(r <=0){
-            return r;
-        }
-        total += r;
+void read_notification_fifo(Board *new_board){
+    char initial_buffer[sizeof(char) + (sizeof(int)*6)];
+    read_full(session.notif_pipe, initial_buffer, sizeof(char) + (sizeof(int)*6));
+    size_t ptr = 0;
+
+    int op_code = initial_buffer[ptr];
+    if(op_code != OP_CODE_BOARD){
+        perror("Invalid op_code received");
+        return;
     }
-    return total;
+    ptr += 1;
+
+    // width
+    memcpy(&(new_board->width), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    // height
+    memcpy(&(new_board->height), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    // tempo
+    memcpy(&(new_board->tempo), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    // victory
+    memcpy(&(new_board->victory), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    // end_game
+    memcpy(&(new_board->game_over), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    // accumulated_points
+    memcpy(&(new_board->accumulated_points), initial_buffer + ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    int data_size = sizeof(char) * new_board->width * new_board->height;
+    char *data_buffer = (char*) malloc(data_size);
+    read_full(session.notif_pipe, data_buffer, data_size);
+    new_board->data = data_buffer;
 }
 
 Board receive_board_update(void) {
-  BoardHeader new_boardheader;
-  Board new_board;
+    //BoardHeader new_boardheader;
+    Board new_board = {0};
 
-  //initialize new_board
-  new_board.data = NULL;
-  new_board.width = 0;
-  new_board.height = 0;
-  new_board.tempo = 0;
-  new_board.victory = 0;
-  new_board.game_over = 0;
-  new_board.accumulated_points = 0;
+    if(session.notif_pipe <0){
+        perror("notif pipe not opened");
+        return new_board;
+    }
+    
+    read_notification_fifo(&new_board);
 
 
-  if(session.notif_pipe <0){
-      perror("notif pipe not opened");
-      return new_board;
-  }
-  
-  if(readfull(session.notif_pipe, &new_boardheader, sizeof(BoardHeader)) != sizeof(BoardHeader)){
-      perror("read board from notif pipe");
-      new_board.data = NULL;
-      return new_board;
-  }
-
-
-  new_board.width = new_boardheader.width;
-  new_board.height = new_boardheader.height;
-  new_board.tempo = new_boardheader.tempo;
-  new_board.victory = new_boardheader.victory;
-  new_board.game_over = new_boardheader.game_over;
-  new_board.accumulated_points = new_boardheader.accumulated_points;
-  new_board.data = malloc(new_boardheader.data_size);
-
-
-  if (!new_board.data) {
-    perror("malloc");
     return new_board;
-  }
-  if(readfull(session.notif_pipe, new_board.data, new_boardheader.data_size) != new_boardheader.data_size){
-      perror("read board data from notif pipe");
-      free(new_board.data);
-      new_board.data = NULL;
-      return new_board;
-  }
-  return new_board;
 }

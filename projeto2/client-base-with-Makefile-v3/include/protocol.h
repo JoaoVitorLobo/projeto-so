@@ -1,7 +1,9 @@
-#define MAX_PIPE_PATH_LENGTH 40
-
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
+
+#include <unistd.h>
+
+#define MAX_PIPE_PATH_LENGTH 40
 
 enum {
   OP_CODE_CONNECT = 1,
@@ -9,5 +11,6 @@ enum {
   OP_CODE_PLAY = 3,
   OP_CODE_BOARD = 4,
 };
+
 
 #endif
