@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -19,6 +21,18 @@ typedef struct {
     board_t *board;
     int ghost_index;
 } ghost_thread_arg_t;
+
+typedef struct {
+    char *level_dir_name;
+    DIR* level_dir;
+    char *client_request_pipe;
+    char *client_notification_pipe;
+} session_thread_arg_t;
+
+typedef struct {
+    board_t *board;
+    char *client_request_pipe;
+} pacman_thread_arg_t;
 
 int thread_shutdown = 0;
 
@@ -63,7 +77,10 @@ void* ncurses_thread(void *arg) {
 }
 
 void* pacman_thread(void *arg) {
-    board_t *board = (board_t*) arg;
+    pacman_thread_arg_t *pacman_arg = (pacman_thread_arg_t*) arg;
+
+    board_t *board = pacman_arg->board;
+    char *client_request_pipe = pacman_arg->client_request_pipe;
 
     pacman_t* pacman = &board->pacmans[0];
 
@@ -77,21 +94,19 @@ void* pacman_thread(void *arg) {
 
         sleep_ms(board->tempo * (1 + pacman->passo));
 
+        int client_request_fd = open(client_request_pipe, O_RDONLY);
+        char buffer[2];
+        read(client_request_fd, buffer, 2);
+        int op_code = buffer[0];
+        char command = buffer[1];
+
         command_t* play;
         command_t c;
-        if (pacman->n_moves == 0) {
-            c.command = get_input();
 
-            if(c.command == '\0') {
-                continue;
-            }
+        c.command = command;
+        c.turns = 1;
+        play = &c;
 
-            c.turns = 1;
-            play = &c;
-        }
-        else {
-            play = &pacman->moves[pacman->current_move%pacman->n_moves];
-        }
 
         debug("KEY %c\n", play->command);
 
@@ -150,25 +165,14 @@ void* ghost_thread(void *arg) {
     }
 }
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        printf("Usage: %s <level_directory>\n", argv[0]);
-        return -1;
-    }
+void* individual_session_thread(void *session_args) {
+    session_thread_arg_t *thread_arg = (session_thread_arg_t *) session_args;
 
-    // Random seed for any random movements
-    srand((unsigned int)time(NULL));
+    char *level_dir_name = thread_arg->level_dir_name;
+    DIR* level_dir = thread_arg->level_dir;
+    char *client_request_pipe = thread_arg->client_request_pipe;
+    char *client_notification_pipe = thread_arg->client_notification_pipe;
 
-    DIR* level_dir = opendir(argv[1]);
-        
-    if (level_dir == NULL) {
-        fprintf(stderr, "Failed to open directory: %s\n", argv[1]);
-        return 0;
-    }
-
-    open_debug_file("debug.log");
-
-    terminal_init();
     
     int accumulated_points = 0;
     bool end_game = false;
@@ -184,10 +188,7 @@ int main(int argc, char** argv) {
         if (!dot) continue;
 
         if (strcmp(dot, ".lvl") == 0) {
-            load_level(&game_board, entry->d_name, argv[1], accumulated_points);
-            draw_board(&game_board, DRAW_MENU);
-            refresh_screen();
-
+            load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
             while(true) {
                 pthread_t ncurses_tid, pacman_tid;
                 pthread_t *ghost_tids = malloc(game_board.n_ghosts * sizeof(pthread_t));
@@ -196,7 +197,12 @@ int main(int argc, char** argv) {
 
                 debug("Creating threads\n");
 
-                pthread_create(&pacman_tid, NULL, pacman_thread, (void*) &game_board);
+ 
+                pacman_thread_arg_t* pacman_arg = malloc(sizeof(pacman_thread_arg_t));
+                pacman_arg->board = &game_board;
+                pacman_arg->client_request_pipe = client_request_pipe;
+
+                pthread_create(&pacman_tid, NULL, pacman_thread, pacman_arg);
                 for (int i = 0; i < game_board.n_ghosts; i++) {
                     ghost_thread_arg_t *arg = malloc(sizeof(ghost_thread_arg_t));
                     arg->board = &game_board;
@@ -275,10 +281,10 @@ int main(int argc, char** argv) {
 
                         if (closedir(level_dir) == -1) {
                             fprintf(stderr, "Failed to close directory\n");
-                            return 0;
+                            return NULL;
                         }
 
-                        return 1;
+                        return NULL;
                     } else {
                         // No backup process, game over
                         result = QUIT_GAME;
@@ -291,23 +297,133 @@ int main(int argc, char** argv) {
                     end_game = true;
                     break;
                 }
-      
-                screen_refresh(&game_board, DRAW_MENU); 
 
-                accumulated_points = game_board.pacmans[0].points;      
+                accumulated_points = game_board.pacmans[0].points;
+                
+                int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
+                char message[data_size];
+                char *ptr = message;
+
+                // op_code (1 byte)
+                *ptr = '4';
+                ptr += 1;
+
+
+                // width
+                memcpy(ptr, &game_board.width, sizeof(int));
+                ptr += sizeof(int);
+
+                // height
+                memcpy(ptr, &game_board.height, sizeof(int));
+                ptr += sizeof(int);
+
+                // tempo
+                memcpy(ptr, &game_board.tempo, sizeof(int));
+                ptr += sizeof(int);
+
+                // victory
+                int vic = end_game ? 1 : 0;
+                memcpy(ptr, &vic, sizeof(int));
+                ptr += sizeof(int);
+
+                // end_game
+                int eg = end_game ? 1 : 0;
+                memcpy(ptr, &eg, sizeof(int));
+                ptr += sizeof(int);
+
+                // accumulated_points
+                memcpy(ptr, &accumulated_points, sizeof(int));
+                ptr += sizeof(int);
+
+                // board data (width * height bytes)
+                memcpy(ptr, game_board.board, game_board.width * game_board.height);
+
+                int client_notification_fd = open(client_notification_pipe, O_WRONLY);
+                if (client_notification_fd < 0) {
+                    perror("open client fifo");
+                    return;
+                }
+                write(client_notification_fd, message, data_size);
+                close(client_notification_fd);
             }
-            print_board(&game_board);
             unload_level(&game_board);
         }
     }    
 
-    terminal_cleanup();
+    return NULL;
+}
+
+int main(int argc, char** argv) {
+    if ( argc != 4) {
+        fprintf(stderr,
+            "Usage: %s <levels_dir> <max_games> <nome_do_FIFO_de_registo>\n",
+            argv[0]);
+        return 1;
+    }
+
+    // Random seed for any random movements
+    srand((unsigned int)time(NULL));
+
+    DIR* level_dir = opendir(argv[1]);
+    //int max_games = atoi(argv[2]);
+    char* register_pipe_name = argv[3];
+
+    if (level_dir == NULL) {
+        fprintf(stderr, "Failed to open directory: %s\n", argv[1]);
+        return 0;
+    }
+
+
+    if(mkfifo(register_pipe_name, 0666) == -1){
+        perror("mkfifo");
+        return 1;  
+    }
+
+    int register_pipe_fd = open(register_pipe_name, O_RDONLY);
+    char buffer[81];
+    //int n_bytes_read = 0;
+    read(register_pipe_fd, buffer, 81);
+
+    char op_code = buffer[0];
+    if(op_code != '1'){
+        perror("op_code");
+        return 1;
+    }
+    char client_request_pipe[41];
+    char client_notification_pipe[41];
+
+    memcpy(client_request_pipe, buffer + 1, 40);
+    client_request_pipe[40] = '\0';
+
+    memcpy(client_notification_pipe, buffer + 41, 40);
+    client_notification_pipe[40] = '\0';
+
+        
+    open_debug_file("debug.log");
+
+
+    
+
+    session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t));
+    session_args->level_dir_name = argv[1];
+    session_args->level_dir = level_dir;
+    session_args->client_request_pipe = client_request_pipe;
+    session_args->client_notification_pipe = client_notification_pipe;
+
+
+    pthread_t session_manager_thread;
+    pthread_create(&session_manager_thread, NULL, individual_session_thread, session_args);
+    
+    pthread_join(session_manager_thread, NULL);
 
     close_debug_file();
+
+    close(register_pipe_fd);
 
     if (closedir(level_dir) == -1) {
         fprintf(stderr, "Failed to close directory\n");
         return 0;
     }
+
     return 0;
 }

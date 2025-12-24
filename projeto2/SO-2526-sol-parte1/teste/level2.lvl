@@ -1,0 +1,12 @@
+DIM 8 8
+TEMPO 100
+#PAC pacman1.p
+MON monster1.m
+XXXXXXXX
+XooooooX
+XooooooX
+XooooooX
+XooooooX
+XooooooX
+Xooooo@X
+XXXXXXXX
