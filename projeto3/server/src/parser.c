@@ -256,7 +256,7 @@ int read_ghosts(board_t* board) {
                 if (arg) {
                     ghost->passo = atoi(arg);
                     ghost->waiting = ghost->passo;
-                    debug("Ghost passo: %d\n", ghost->passo);
+                    //debug("Ghost passo: %d\n", ghost->passo);
                 }
             }
             else if (strcmp(word, "POS") == 0) {
@@ -267,7 +267,7 @@ int read_ghosts(board_t* board) {
                     ghost->pos_y = atoi(arg2);
                     int idx = ghost->pos_y * board->width + ghost->pos_x;
                     board->board[idx].content = 'M';
-                    debug("Ghost Pos = %d x %d\n", ghost->pos_x, ghost->pos_y);
+                    //debug("Ghost Pos = %d x %d\n", ghost->pos_x, ghost->pos_y);
                 }
             }
             else {

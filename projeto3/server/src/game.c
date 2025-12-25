@@ -84,6 +84,7 @@ void* pacman_thread(void *arg) {
     char *client_request_pipe = pacman_arg->client_request_pipe;
 
     pacman_t* pacman = &board->pacmans[0];
+    debug("PACMAN THREAD\n");
 
     int *retval = malloc(sizeof(int));
 
@@ -98,15 +99,15 @@ void* pacman_thread(void *arg) {
         int client_request_fd = open(client_request_pipe, O_RDONLY);
         char buffer[1];
         read_full(client_request_fd, buffer, 1);
-        int op_code = buffer[0];
-        debug("READ OP_CODE %d\n", op_code);
+        int op_code = buffer[0] - '0';
         if(op_code == OP_CODE_DISCONNECT){
+            debug("Receiving disconnect message (1 bytes): op=%c\n", buffer[0]);
             *retval = QUIT_GAME;
             return (void*) retval;
         }
         read_full(client_request_fd, buffer, 1);
-        debug("READ COMMAND %c\n", buffer[0]);
         char command = buffer[0];
+        debug("Receiving play message (2 bytes): op=%c command=%c\n", op_code, command);
 
         command_t* play;
         command_t c;
@@ -173,6 +174,52 @@ void* ghost_thread(void *arg) {
     }
 }
 
+void board_to_message(char *message, board_t* game_board, int end_game, int accumulated_points) {
+    int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board->width * game_board->height);
+    char *ptr = message;
+
+    // op_code (1 byte)
+    *ptr = OP_CODE_BOARD; //OP_CODE_BOARD
+    ptr += 1;
+
+    // width
+    memcpy(ptr, &game_board->width, sizeof(int));
+    ptr += sizeof(int);
+
+    // height
+    memcpy(ptr, &game_board->height, sizeof(int));
+    ptr += sizeof(int);
+
+    // tempo
+    memcpy(ptr, &game_board->tempo, sizeof(int));
+    ptr += sizeof(int);
+
+    // victory
+    int vic = end_game ? 1 : 0;
+    memcpy(ptr, &vic, sizeof(int));
+    ptr += sizeof(int);
+
+    // end_game
+    int eg = end_game ? 1 : 0;
+    memcpy(ptr, &eg, sizeof(int));
+    ptr += sizeof(int);
+
+    // accumulated_points
+    memcpy(ptr, &accumulated_points, sizeof(int));
+    ptr += sizeof(int);
+
+    // board data (width * height bytes)
+    memcpy(ptr, game_board->board, game_board->width * game_board->height);
+
+    debug("Sending update message to notifications (%d bytes): op=%c width=%d height=%d tempo: %d victory: %d game_over: %d accumulated_points: %d\n", data_size, message[0], game_board->width, game_board->height, game_board->tempo, vic, eg, accumulated_points);
+    for (int lin = 0; lin < game_board->height; lin++) {
+        for (int col = 0; col < game_board->width; col++) {
+            debug("%c", game_board->board[lin * game_board->width + col]);
+        }
+        debug("\n");
+    }
+}
+
 void* individual_session_thread(void *session_args) {
     session_thread_arg_t *thread_arg = (session_thread_arg_t *) session_args;
 
@@ -194,8 +241,7 @@ void* individual_session_thread(void *session_args) {
     }
     message[1] = '0'; 
     debug("Sending return message to connect (2 bytes): op=%c result=%c\n", message[0], message[1]);
-    write(client_notification_fd, message, sizeof(message));
-    close(client_notification_fd);
+    write_full(client_notification_fd, message, sizeof(message));
 
     int accumulated_points = 0;
     bool end_game = false;
@@ -212,6 +258,14 @@ void* individual_session_thread(void *session_args) {
 
         if (strcmp(dot, ".lvl") == 0) {
             load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
+        
+            int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
+            char message[data_size];
+
+            board_to_message(message, &game_board, end_game, accumulated_points);
+
+            write_full(client_notification_fd, message, data_size);
+
             while(true) {
                 pthread_t /*ncurses_tid,*/ pacman_tid;
                 pthread_t *ghost_tids = malloc(game_board.n_ghosts * sizeof(pthread_t));
@@ -226,16 +280,19 @@ void* individual_session_thread(void *session_args) {
                 pacman_arg->client_request_pipe = client_request_pipe;
 
                 pthread_create(&pacman_tid, NULL, pacman_thread, pacman_arg);
+                debug("Created pacman thread\n");
                 for (int i = 0; i < game_board.n_ghosts; i++) {
                     ghost_thread_arg_t *arg = malloc(sizeof(ghost_thread_arg_t));
                     arg->board = &game_board;
                     arg->ghost_index = i;
                     pthread_create(&ghost_tids[i], NULL, ghost_thread, (void*) arg);
                 }
+                debug("Created ghost threads\n");
                 //pthread_create(&ncurses_tid, NULL, ncurses_thread, (void*) &game_board);
 
                 int *retval;
                 pthread_join(pacman_tid, (void**)&retval);
+                debug("Pacman thread joined\n");
 
                 pthread_rwlock_wrlock(&game_board.state_lock);
                 thread_shutdown = 1;
@@ -245,6 +302,7 @@ void* individual_session_thread(void *session_args) {
                 for (int i = 0; i < game_board.n_ghosts; i++) {
                     pthread_join(ghost_tids[i], NULL);
                 }
+                debug("Ghost threads joined\n");
 
                 free(ghost_tids);
                 free(pacman_arg);
@@ -324,64 +382,15 @@ void* individual_session_thread(void *session_args) {
 
                 accumulated_points = game_board.pacmans[0].points;
                 
-                int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
-                char message[data_size];
-                char *ptr = message;
+                board_to_message(message, &game_board, end_game, accumulated_points);
 
-                // op_code (1 byte)
-                *ptr = OP_CODE_BOARD; //OP_CODE_BOARD
-                ptr += 1;
-
-
-                // width
-                memcpy(ptr, &game_board.width, sizeof(int));
-                ptr += sizeof(int);
-
-                // height
-                memcpy(ptr, &game_board.height, sizeof(int));
-                ptr += sizeof(int);
-
-                // tempo
-                memcpy(ptr, &game_board.tempo, sizeof(int));
-                ptr += sizeof(int);
-
-                // victory
-                int vic = end_game ? 1 : 0;
-                memcpy(ptr, &vic, sizeof(int));
-                ptr += sizeof(int);
-
-                // end_game
-                int eg = end_game ? 1 : 0;
-                memcpy(ptr, &eg, sizeof(int));
-                ptr += sizeof(int);
-
-                // accumulated_points
-                memcpy(ptr, &accumulated_points, sizeof(int));
-                ptr += sizeof(int);
-
-                // board data (width * height bytes)
-                memcpy(ptr, game_board.board, game_board.width * game_board.height);
-
-                int client_notification_fd = open(client_notification_pipe, O_WRONLY);
-                if (client_notification_fd < 0) {
-                    perror("open client fifo");
-                    return NULL;
-                }
-                debug("Sending return message to connect (%d bytes): op=%c width=%d height=%d tempo: %d victory: %d game_over: %d accumulated_points: %d\n", data_size, message[0], game_board.width, game_board.height, game_board.tempo, vic, eg, accumulated_points);
-                for (int lin = 0; lin < game_board.height; lin++) {
-                    for (int col = 0; col < game_board.width; col++) {
-                        debug("%c", game_board.board[lin * game_board.width + col]);
-                    }
-                    debug("\n");
-                }
-
-                write(client_notification_fd, message, data_size);
-                close(client_notification_fd);
+                write_full(client_notification_fd, message, data_size);
             }
             unload_level(&game_board);
         }
     }    
 
+    close(client_notification_fd);
     return NULL;
 }
 
@@ -434,7 +443,7 @@ int main(int argc, char** argv) {
         perror("op_code");
         return 1;
     }
-    op_code = op_code - '0';
+    op_code = op_code;
     char client_request_pipe[41];
     char client_notification_pipe[41];
 
@@ -444,9 +453,7 @@ int main(int argc, char** argv) {
     memcpy(client_notification_pipe, buffer + 41, 40);
     client_notification_pipe[40] = '\0';
 
-    debug("op_code: %d\n", op_code);
-    debug("client_request_pipe: %s\n", client_request_pipe);
-    debug("client_notification_pipe: %s\n", client_notification_pipe);
+    debug("Receiving register message from connect (81 bytes): op=%c client_request_pipe=%s client_notification_pipe=%s\n", op_code, client_request_pipe, client_notification_pipe);
 
     debug("BEFORE Creating session manager thread\n");
 

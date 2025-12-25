@@ -92,6 +92,8 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
     msg[0] = (char)('0' + OP_CODE_PLAY);
     msg[1] = command;
 
+    debug("Sending play message (2 bytes): op=%c command=%c\n", msg[0], msg[1]);
+
     if(write_full(session.req_pipe_fd, msg, sizeof(msg))!= sizeof(msg)){
         perror("write command to req pipe");
         return;
@@ -104,8 +106,9 @@ int pacman_disconnect() {
         debug("Opened req pipe: %s - disconnect\n", session.req_pipe_path);
         session.req_pipe_fd = req_pipe_fd;
     }
-
-    char msg[1] = {OP_CODE_DISCONNECT};
+    int op_code = (char)('0' + OP_CODE_DISCONNECT);
+    char msg[1] = {op_code};
+    debug("Sending disconnect message (1 bytes): op=%c\n", msg[0]);
     if (write_full(session.req_pipe_fd, msg, sizeof(char)) != sizeof(msg)) {
         perror("write disconnect command to req pipe");
         return 1;
@@ -132,15 +135,25 @@ int pacman_disconnect() {
 
 void read_notification_fifo(Board *new_board){
     char initial_buffer[sizeof(char) + (sizeof(int)*6)];
-    read_full(session.notif_pipe_fd, initial_buffer, sizeof(char) + (sizeof(int)*6));
+    debug("Waiting for notification on fifo...\n");
+    ssize_t bytes_read = read_full(session.notif_pipe_fd, initial_buffer, sizeof(char) + (sizeof(int)*6));
+    debug("Read %ld bytes from notification fifo\n", bytes_read);
+    
+    if (bytes_read <= 0) {
+        debug("ERROR: read_full returned %ld (EOF or error)\n", bytes_read);
+        return;
+    }
+    
     size_t ptr = 0;
 
-    debug("initial_bufer: %s\n", initial_buffer);
-
     debug("Received board update notification\n");
+
+    debug("initial_bufer:%s:fim\n", initial_buffer);
+
     int op_code = initial_buffer[ptr];
     debug("OP_CODE: %d ", op_code);
     if(op_code != OP_CODE_BOARD){
+        debug("\n");
         perror("Invalid op_code received");
         return;
     }

@@ -21,6 +21,8 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void *receiver_thread(void *arg) {
     (void)arg;
 
+    debug("RECEIVER THREAD STARTED\n");
+
     while (true) {
         
         Board board = receive_board_update();
@@ -98,6 +100,7 @@ int main(int argc, char *argv[]) {
     int ch;
 
     while (1) {
+        debug("Main loop iteration\n");
 
         pthread_mutex_lock(&mutex);
         if (stop_execution){
@@ -146,6 +149,7 @@ int main(int argc, char *argv[]) {
 
         debug("Command: %c\n", command);
 
+        debug("Sending command to server: %c\n", command);
         pacman_play(command);
 
     }

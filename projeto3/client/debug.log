@@ -9,7 +9,9 @@ Closed server pipe: server_register_fifo
 Opened notif pipe: /tmp/1_notification
 Connect result: 0
 AFTER CONNECT
-initial_bufer: 
 Received board update notification
-OP_CODE: 0 Returning receiver thread...
+initial_bufer: 
+OP_CODE: 0 
+Returning receiver thread...
 Opened req pipe: /tmp/1_request - disconnect
+Sending disconnect message (1 bytes): op=2
