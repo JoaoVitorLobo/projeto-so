@@ -19,6 +19,10 @@ struct Session {
   char req_pipe_path[MAX_PIPE_PATH_LENGTH + 1];
   char notif_pipe_path[MAX_PIPE_PATH_LENGTH + 1];
 };
+typedef struct {
+    char op_code;
+    int session_id;
+} disconnect_msg_t;
 
 static struct Session session = {.id = -1};
 
@@ -107,9 +111,13 @@ int pacman_disconnect() {
         session.req_pipe_fd = req_pipe_fd;
     }
     int op_code = (char)('0' + OP_CODE_DISCONNECT);
-    char msg[1] = {op_code};
-    debug("Sending disconnect message (1 bytes): op=%c\n", msg[0]);
-    if (write_full(session.req_pipe_fd, msg, sizeof(char)) != sizeof(msg)) {
+
+    // o id de sessão não é necessariamente apenas um dígito
+    disconnect_msg_t disconnect_msg;
+    disconnect_msg.op_code = (char)op_code;
+    disconnect_msg.session_id = session.id;
+    debug("Sending disconnect message (1 bytes): op=%c\n", disconnect_msg.op_code);
+    if (write_full(session.req_pipe_fd, &disconnect_msg, sizeof(disconnect_msg_t)) != sizeof(disconnect_msg_t)) {
         perror("write disconnect command to req pipe");
         return 1;
     }

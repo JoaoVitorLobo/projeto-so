@@ -24,11 +24,17 @@ typedef struct {
 } ghost_thread_arg_t;
 
 typedef struct {
+    int session_id;
     char *level_dir_name;
     DIR* level_dir;
     char *client_request_pipe;
     char *client_notification_pipe;
 } session_thread_arg_t;
+
+typedef struct{
+    session_thread_arg_t *session_args;
+    pthread_t thread;
+}thread_store;
 
 typedef struct {
     board_t *board;
@@ -394,43 +400,7 @@ void* individual_session_thread(void *session_args) {
     return NULL;
 }
 
-int main(int argc, char** argv) {
-    if ( argc < 4) {
-        fprintf(stderr,
-            "Usage: %s <levels_dir> <max_games> <nome_do_FIFO_de_registo>\n",
-            argv[0]);
-        return 1;
-    }
-
-    // Random seed for any random movements
-    srand((unsigned int)time(NULL));
-    open_debug_file("debug_server.log");
-
-    debug("opening level dir: %s\n", argv[1]);
-    DIR* level_dir = opendir(argv[1]);
-    if (level_dir == NULL) {
-        perror("opendir");
-        return -1;
-    }
-
-    //int max_games = atoi(argv[2]);
-    char* register_pipe_name = argv[3];
-
-    if (level_dir == NULL) {
-        fprintf(stderr, "Failed to open directory: %s\n", argv[1]);
-        return 0;
-    }
-
-    debug("unlink fifo: %s\n", register_pipe_name);
-    unlink(register_pipe_name); // Unlink existing pipe
-    debug("Creating register fifo: %s\n", register_pipe_name);
-    if(mkfifo(register_pipe_name, 0666) == -1){
-        perror("mkfifo");
-        return 1;  
-    }
-
-    debug("Opening register fifo: %s\n", register_pipe_name);
-    int register_pipe_fd = open(register_pipe_name, O_RDONLY);
+int session_thread_create(char* register_pipe_name, int register_pipe_fd, char** argv, DIR* level_dir, thread_store* session_threads, int* next_game_id) {
     debug("Opened register fifo: %s\n", register_pipe_name);
     char buffer[81];
     //int n_bytes_read = 0;
@@ -467,8 +437,76 @@ int main(int argc, char** argv) {
     pthread_t session_manager_thread;
     debug("BEFORE Creating session manager thread\n");
     pthread_create(&session_manager_thread, NULL, individual_session_thread, session_args);
+    session_threads[*next_game_id].thread = session_manager_thread;
+    session_threads[*next_game_id].session_args = session_args;
+}
+
+int main(int argc, char** argv) {
+    if ( argc < 4) {
+        fprintf(stderr,
+            "Usage: %s <levels_dir> <max_games> <nome_do_FIFO_de_registo>\n",
+            argv[0]);
+        return 1;
+    }
+
+    // Random seed for any random movements
+    srand((unsigned int)time(NULL));
+    open_debug_file("debug_server.log");
+
+    debug("opening level dir: %s\n", argv[1]);
+    DIR* level_dir = opendir(argv[1]);
+    if (level_dir == NULL) {
+        perror("opendir");
+        return -1;
+    }
     
-    pthread_join(session_manager_thread, NULL);
+    // criar threads para cada sessão
+
+    int max_games = atoi(argv[2]);
+    int current_games = 0;
+    int next_game_id = 0;// to assign session ids
+    thread_store* session_threads = malloc(max_games * sizeof(thread_store));
+    char* register_pipe_name = argv[3];
+
+    if (level_dir == NULL) {
+        fprintf(stderr, "Failed to open directory: %s\n", argv[1]);
+        return 0;
+    }
+
+    debug("unlink fifo: %s\n", register_pipe_name);
+    unlink(register_pipe_name); // Unlink existing pipe
+    debug("Creating register fifo: %s\n", register_pipe_name);
+    if(mkfifo(register_pipe_name, 0666) == -1){
+        perror("mkfifo");
+        return 1;  
+    }
+
+    debug("Opening register fifo: %s\n", register_pipe_name);
+
+    // reads the register fifo
+    int register_pipe_fd = open(register_pipe_name, O_RDONLY);
+    current_games++;
+    while(current_games){
+        if(current_games<max_games){
+            session_thread_create(register_pipe_name, register_pipe_fd, argv, level_dir, session_threads, &next_game_id);
+            current_games++;
+            next_game_id = current_games;
+        }
+        else{
+            /*for (int i=0;i<max_games;i++){
+                if (session_threads[i].thread){
+                    char 
+                    if (read_full(session_threads[i].session_args->client_request_pipe))
+                }
+            }*/
+            current_games--;
+        }
+    }
+    session_thread_create(register_pipe_name, register_pipe_fd, argv, level_dir, session_threads, &next_game_id);
+    
+    //pthread_join(session_manager_thread, NULL);
+
+    // Cleanup
 
     close_debug_file();
 
@@ -480,7 +518,7 @@ int main(int argc, char** argv) {
     }
 
     unlink(register_pipe_name);
-    free(session_args);
+    //free(session_args); - dar free da memória alocada para os argumentos da thread de sessão
 
     return 0;
 }
