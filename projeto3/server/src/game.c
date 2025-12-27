@@ -106,8 +106,9 @@ void* pacman_thread(void *arg) {
             return (void*) retval;
         }
         read_full(client_request_fd, buffer, 1);
+        debug("comand read\n");
         char command = buffer[0];
-        debug("Receiving play message (2 bytes): op=%c command=%c\n", op_code, command);
+        debug("Receiving play message (2 bytes): op=%d command=%c\n", op_code, command);
 
         command_t* play;
         command_t c;
@@ -179,7 +180,7 @@ void board_to_message(char *message, board_t* game_board, int end_game, int accu
     char *ptr = message;
 
     // op_code (1 byte)
-    *ptr = OP_CODE_BOARD; //OP_CODE_BOARD
+    ptr[0] = (char)('0' + OP_CODE_BOARD); //OP_CODE_BOARD
     ptr += 1;
 
     // width
@@ -209,12 +210,35 @@ void board_to_message(char *message, board_t* game_board, int end_game, int accu
     ptr += sizeof(int);
 
     // board data (width * height bytes)
-    memcpy(ptr, game_board->board, game_board->width * game_board->height);
+    //memcpy(ptr, game_board->board, game_board->width * game_board->height);
+    for (int i = 0; i < game_board->width * game_board->height; i++) {
+        switch(game_board->board[i].content) {
+            case 'W':
+                ptr[i] = 'X';
+                break;
+            case 'P':
+                ptr[i] = 'C';
+                break;
+            case 'M':
+                ptr[i] = 'M';
+                break;
+            default:
+                if (game_board->board[i].has_dot) {
+                    ptr[i] = '.';
+                } else if (game_board->board[i].has_portal) {
+                    ptr[i] = '@';
+                } else {
+                    ptr[i] = ' ';
+                }
+                break;
+        }
+    }
+
 
     debug("Sending update message to notifications (%d bytes): op=%c width=%d height=%d tempo: %d victory: %d game_over: %d accumulated_points: %d\n", data_size, message[0], game_board->width, game_board->height, game_board->tempo, vic, eg, accumulated_points);
     for (int lin = 0; lin < game_board->height; lin++) {
         for (int col = 0; col < game_board->width; col++) {
-            debug("%c", game_board->board[lin * game_board->width + col]);
+            debug("%c", game_board->board[lin * game_board->width + col].content);
         }
         debug("\n");
     }
@@ -385,6 +409,7 @@ void* individual_session_thread(void *session_args) {
                 board_to_message(message, &game_board, end_game, accumulated_points);
 
                 write_full(client_notification_fd, message, data_size);
+                //não chega aqui
             }
             unload_level(&game_board);
         }

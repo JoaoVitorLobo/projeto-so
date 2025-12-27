@@ -150,7 +150,7 @@ void read_notification_fifo(Board *new_board){
 
     debug("initial_bufer:%s:fim\n", initial_buffer);
 
-    int op_code = initial_buffer[ptr];
+    int op_code = initial_buffer[ptr] - '0';
     debug("OP_CODE: %d ", op_code);
     if(op_code != OP_CODE_BOARD){
         debug("\n");
@@ -191,7 +191,7 @@ void read_notification_fifo(Board *new_board){
 
     int data_size = sizeof(char) * new_board->width * new_board->height;
     char *data_buffer = (char*) malloc(data_size);
-    read_full(session.notif_pipe_fd, data_buffer, data_size);
+    read_full(session.notif_pipe_fd, data_buffer, data_size);// precisamos libertar o buffer depois
     new_board->data = data_buffer;
 
     for (int lin = 0; lin < new_board->height; lin++) {
