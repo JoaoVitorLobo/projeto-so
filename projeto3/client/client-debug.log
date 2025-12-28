@@ -9,7 +9,9 @@ Closed server pipe: coisa
 Opened notif pipe: /tmp/1_notification
 Connect result: 0
 AFTER CONNECT
+Created receiver thread
 RECEIVER THREAD STARTED
+Receiving board update from notification fifo
 Waiting for notification on fifo...
 Main loop iteration
 Read 25 bytes from notification fifo
@@ -24,80 +26,1215 @@ X......X
 X...M..X
 X.....@X
 XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Opened req pipe: /tmp/1_request - play
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 1
+XXXXXXXX
+X......X
+XC.....X
+X...M..X
+X......X
+X......X
+X.....@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 2
+XXXXXXXX
+X......X
+X .....X
+XC.....X
+X......X
+X...M..X
+X.....@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 3
+XXXXXXXX
+X......X
+X .....X
+X .....X
+XC..M..X
+X......X
+X.....@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 4
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X .....X
+XC..M..X
+X.....@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 5
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X ..M..X
+X .....X
+XC....@X
+XXXXXXXX
+Receiving board update from notification fifo
 Waiting for notification on fifo...
 Main loop iteration
 Command: D
 Sending command to server: D
-Opened req pipe: /tmp/1_request - play
 Sending play message (2 bytes): op=3 command=D
 Main loop iteration
-Command: S
-Sending command to server: S
-Sending play message (2 bytes): op=3 command=S
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 6
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X ..M..X
+X .....X
+X C...@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
 Main loop iteration
-Command: A
-Sending command to server: A
-Sending play message (2 bytes): op=3 command=A
-Main loop iteration
-Main loop iteration
-Command: S
-Sending command to server: S
-Sending play message (2 bytes): op=3 command=S
-Main loop iteration
-Command: A
-Sending command to server: A
-Sending play message (2 bytes): op=3 command=A
-Main loop iteration
-Command: S
-Sending command to server: S
-Sending play message (2 bytes): op=3 command=S
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 7
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X .....X
+X ..M..X
+X  C..@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Main loop iteration
 Command: D
 Sending command to server: D
 Sending play message (2 bytes): op=3 command=D
 Main loop iteration
-Command: W
-Sending command to server: W
-Sending play message (2 bytes): op=3 command=W
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 8
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X ..M..X
+X .....X
+X   C.@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
 Main loop iteration
-Command: A
-Sending command to server: A
-Sending play message (2 bytes): op=3 command=A
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4:fim
+OP_CODE: 4 Width: 8 Height: 8 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 9
+XXXXXXXX
+X......X
+X .....X
+X .....X
+X .....X
+X ..M..X
+X    C@X
+XXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 9
+XXXXXXXXXX
+XC.......X
+X........X
+X........X
+X........X
+X...M...MX
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Main loop iteration
 Command: S
 Sending command to server: S
 Sending play message (2 bytes): op=3 command=S
 Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 10
+XXXXXXXXXX
+X........X
+XC.......X
+X........X
+X...M....X
+X......M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Command: D
 Sending command to server: D
 Sending play message (2 bytes): op=3 command=D
 Main loop iteration
-Command: W
-Sending command to server: W
-Sending play message (2 bytes): op=3 command=W
-Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 11
+XXXXXXXXXX
+X........X
+X C......X
+X........X
+X...M....X
+X......M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Command: A
 Sending command to server: A
 Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 11
+XXXXXXXXXX
+X........X
+XC ......X
+X........X
+X...M....X
+X......M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 11
+XXXXXXXXXX
+X........X
+XC ......X
+X........X
+X...M....X
+X......M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 12
+XXXXXXXXXX
+X........X
+X  ......X
+XC.......X
+X........X
+X...M..M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Main loop iteration
+Main loop iteration
 Main loop iteration
 Command: S
 Sending command to server: S
 Sending play message (2 bytes): op=3 command=S
 Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 13
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+XC.......X
+X......M.X
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 14
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+XC......MX
+X........X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 15
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+XC.......X
+X.......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 16
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+XC......@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
 Command: D
 Sending command to server: D
 Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 17
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X .......X
+X C.....@X
+X........X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 18
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .....@X
+X.C......X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 19
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .....@X
+X. C.....X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 20
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X .......X
+X  .....@X
+X.  C....X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 21
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X .......X
+X  .....@X
+X.   C...X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 22
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .....@X
+X.    C..X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 23
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X .......X
+X  .....@X
+X.     C.X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 24
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X .......X
+X  .....@X
+X.      CX
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Main loop iteration
 Command: A
 Sending command to server: A
 Sending play message (2 bytes): op=3 command=A
 Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 24
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .....@X
+X.     C X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
 Command: W
 Sending command to server: W
 Sending play message (2 bytes): op=3 command=W
 Main loop iteration
-Client pressed 'Q', quitting game
-Sending disconnect message (1 bytes): op=2
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 25
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X .......X
+X  ....C@X
+X.       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 26
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X .......X
+X  ...C @X
+X.       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 27
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X .......X
+X  ..C  @X
+X.       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 28
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .C   @X
+X.       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 28
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X .......X
+X  .    @X
+X.  C    X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 28
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X  .    @X
+X. C     X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: W
+Sending command to server: W
+Sending play message (2 bytes): op=3 command=W
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 29
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X .......X
+X  C    @X
+X.       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 29
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X .......X
+X       @X
+X. C     X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 29
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+X       @X
+X.C      X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 30
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X .......X
+X       @X
+XC       X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: W
+Sending command to server: W
+Sending play message (2 bytes): op=3 command=W
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 30
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X .......X
+XC      @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 30
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X .......X
+X C     @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: W
+Sending command to server: W
+Sending play message (2 bytes): op=3 command=W
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 31
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X C......X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 32
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X  C.....X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 33
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X   C....X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 34
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X    C...X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 35
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X     C..X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 36
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X      C.X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X       CX
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X      C X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X     C  X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X    C   X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Main loop iteration
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X     C  X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X .......X
+X ..M..M.X
+X      C X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: A
+Sending command to server: A
+Sending play message (2 bytes): op=3 command=A
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X     C  X
+X       @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ......MX
+X        X
+X     C @X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X        X
+X      C@X
+X        X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: S
+Sending command to server: S
+Sending play message (2 bytes): op=3 command=S
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X ..M....X
+X .......X
+X .....M.X
+X        X
+X       @X
+X      C X
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Main loop iteration
+Main loop iteration
+Main loop iteration
+Main loop iteration
+Main loop iteration
+Main loop iteration
+Command: D
+Sending command to server: D
+Sending play message (2 bytes): op=3 command=D
+Main loop iteration
+Read 25 bytes from notification fifo
+Received board update notification
+initial_bufer:4
+:fim
+OP_CODE: 4 Width: 10 Height: 10 Tempo: 100 Victory: 0 Game Over: 0 Accumulated Points: 37
+XXXXXXXXXX
+X........X
+X  ......X
+X .......X
+X ..M....X
+X ....M..X
+X        X
+X       @X
+X       CX
+XXXXXXXXXX
+Receiving board update from notification fifo
+Waiting for notification on fifo...
+Command: W
+Sending command to server: W
+Sending play message (2 bytes): op=3 command=W
+Main loop iteration
 Read -1 bytes from notification fifo
 ERROR: read_full returned -1 (EOF or error)
-Returning receiver thread...
+Main loop iteration
+Sending disconnect message (1 bytes): op=2

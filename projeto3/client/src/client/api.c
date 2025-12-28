@@ -205,6 +205,7 @@ void read_notification_fifo(Board *new_board){
 
 Board receive_board_update(void) {
     //BoardHeader new_boardheader;
+    debug("Receiving board update from notification fifo\n");
     Board new_board = {0};
 
     if(session.notif_pipe_fd <0){

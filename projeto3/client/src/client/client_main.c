@@ -23,6 +23,10 @@ static void *receiver_thread(void *arg) {
 
     debug("RECEIVER THREAD STARTED\n");
 
+    pthread_mutex_lock(&mutex);
+    tempo = board.tempo;
+    pthread_mutex_unlock(&mutex);
+
     while (true) {
         
         Board board = receive_board_update();
@@ -34,17 +38,13 @@ static void *receiver_thread(void *arg) {
             break;
         }
 
-        pthread_mutex_lock(&mutex);
-        tempo = board.tempo;
-        pthread_mutex_unlock(&mutex);
-
+        
         draw_board_client(board);
         refresh_screen();
 
         free(board.data);
     }
 
-    debug("Returning receiver thread...\n");
     return NULL;
 }
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t receiver_thread_id;
     pthread_create(&receiver_thread_id, NULL, receiver_thread, NULL);
-
+    debug("Created receiver thread\n");
     terminal_init();
     set_timeout(500);
     draw_board_client(board);
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         pthread_mutex_unlock(&mutex);
-
+        
         if (cmd_fp) {
             // Input from file
             ch = fgetc(cmd_fp);

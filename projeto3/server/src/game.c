@@ -139,10 +139,13 @@ void* pacman_thread(void *arg) {
             *retval = NEXT_LEVEL;
             break;
         }
-
-        if(result == DEAD_PACMAN) {
+        else if(result == DEAD_PACMAN) {
             // Restart from child, wait for child, then quit
             *retval = LOAD_BACKUP;
+            break;
+        }
+        else{
+            *retval = CONTINUE_PLAY;
             break;
         }
 
@@ -315,7 +318,7 @@ void* individual_session_thread(void *session_args) {
                 //pthread_create(&ncurses_tid, NULL, ncurses_thread, (void*) &game_board);
 
                 int *retval;
-                pthread_join(pacman_tid, (void**)&retval);
+                pthread_join(pacman_tid, (void**)&retval); // ele não pode ficar à espera do pacman acabar, pois assim só dá refresh quando acaba/troca de nivel
                 debug("Pacman thread joined\n");
 
                 pthread_rwlock_wrlock(&game_board.state_lock);
@@ -337,6 +340,7 @@ void* individual_session_thread(void *session_args) {
                 if(result == NEXT_LEVEL) {
                     screen_refresh(&game_board, DRAW_WIN);
                     sleep_ms(game_board.tempo);
+                    debug("returned-5\n");
                     break;
                 }
 
@@ -349,6 +353,7 @@ void* individual_session_thread(void *session_args) {
                             // failed to fork
                             debug("[%d] Failed to create backup\n", getpid());
                             end_game = true;
+                            debug("returned-4\n");
                             break;
                         }
                         if (child > 0) {
@@ -365,6 +370,7 @@ void* individual_session_thread(void *session_args) {
                                 }
                                 else { // End game or error
                                     end_game = true;
+                                    debug("returned-3\n");
                                     break;
                                 }
                             }
@@ -387,9 +393,10 @@ void* individual_session_thread(void *session_args) {
 
                         if (closedir(level_dir) == -1) {
                             fprintf(stderr, "Failed to close directory\n");
+                            debug("returned-2\n");
                             return NULL;
                         }
-
+                        debug("returned-1\n");
                         return NULL;
                     } else {
                         // No backup process, game over
@@ -401,15 +408,17 @@ void* individual_session_thread(void *session_args) {
                     screen_refresh(&game_board, DRAW_GAME_OVER); 
                     sleep_ms(game_board.tempo);
                     end_game = true;
+                    debug("QUIT_GAME\n");
                     break;
                 }
-
-                accumulated_points = game_board.pacmans[0].points;
                 
+                accumulated_points = game_board.pacmans[0].points;
+                debug("Accumulated points: %d\n", accumulated_points);
                 board_to_message(message, &game_board, end_game, accumulated_points);
-
+                
                 write_full(client_notification_fd, message, data_size);
-                //não chega aqui
+
+
             }
             unload_level(&game_board);
         }

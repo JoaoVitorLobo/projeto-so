@@ -25,56 +25,1189 @@ Created pacman thread
 PACMAN THREAD
 Created ghost threads
 comand read
-Receiving play message (2 bytes): op=3 command=D
-KEY D
-comand read
 Receiving play message (2 bytes): op=3 command=S
 KEY S
-comand read
-Receiving play message (2 bytes): op=3 command=A
-KEY A
-comand read
-Receiving play message (2 bytes): op=3 command=S
-KEY S
-comand read
-Receiving play message (2 bytes): op=3 command=A
-KEY A
-comand read
-Receiving play message (2 bytes): op=3 command=S
-KEY S
-comand read
-Receiving play message (2 bytes): op=3 command=D
-KEY D
-comand read
-Receiving play message (2 bytes): op=3 command=W
-KEY W
-comand read
-Receiving play message (2 bytes): op=3 command=A
-KEY A
-comand read
-Receiving play message (2 bytes): op=3 command=S
-KEY S
-comand read
-Receiving play message (2 bytes): op=3 command=D
-KEY D
-comand read
-Receiving play message (2 bytes): op=3 command=W
-KEY W
-comand read
-Receiving play message (2 bytes): op=3 command=A
-KEY A
-comand read
-Receiving play message (2 bytes): op=3 command=S
-KEY S
-comand read
-Receiving play message (2 bytes): op=3 command=D
-KEY D
-comand read
-Receiving play message (2 bytes): op=3 command=A
-KEY A
-comand read
-Receiving play message (2 bytes): op=3 command=W
-KEY W
-Receiving disconnect message (1 bytes): op=2
 Pacman thread joined
 Ghost threads joined
+Accumulated points: 1
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 1
+WWWWWWWW
+W      W
+WP     W
+W   M  W
+W      W
+W      W
+W      W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 2
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 2
+WWWWWWWW
+W      W
+W      W
+WP     W
+W      W
+W   M  W
+W      W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 3
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 3
+WWWWWWWW
+W      W
+W      W
+W      W
+WP  M  W
+W      W
+W      W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 4
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 4
+WWWWWWWW
+W      W
+W      W
+W      W
+W      W
+WP  M  W
+W      W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 5
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 5
+WWWWWWWW
+W      W
+W      W
+W      W
+W   M  W
+W      W
+WP     W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 6
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 6
+WWWWWWWW
+W      W
+W      W
+W      W
+W   M  W
+W      W
+W P    W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 7
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 7
+WWWWWWWW
+W      W
+W      W
+W      W
+W      W
+W   M  W
+W  P   W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 8
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 8
+WWWWWWWW
+W      W
+W      W
+W      W
+W   M  W
+W      W
+W   P  W
+WWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 9
+Sending update message to notifications (89 bytes): op=4 width=8 height=8 tempo: 100 victory: 0 game_over: 0 accumulated_points: 9
+WWWWWWWW
+W      W
+W      W
+W      W
+W      W
+W   M  W
+W    P W
+WWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+returned-5
+MON file: teste/monster1.m
+MON file: teste/monster2.m
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 9
+WWWWWWWWWW
+WP       W
+W        W
+W        W
+W        W
+W   M   MW
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 10
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 10
+WWWWWWWWWW
+W        W
+WP       W
+W        W
+W   M    W
+W      M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 11
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 11
+WWWWWWWWWW
+W        W
+W P      W
+W        W
+W   M    W
+W      M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 11
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 11
+WWWWWWWWWW
+W        W
+WP       W
+W        W
+W   M    W
+W      M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 11
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 11
+WWWWWWWWWW
+W        W
+WP       W
+W        W
+W   M    W
+W      M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 12
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 12
+WWWWWWWWWW
+W        W
+W        W
+WP       W
+W        W
+W   M  M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 13
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 13
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+WP       W
+W      M W
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 14
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 14
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+WP      MW
+W        W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 15
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 15
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+WP       W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 16
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 16
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+WP       W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 17
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 17
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W P      W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 18
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 18
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W P      W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 19
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 19
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W  P     W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 20
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 20
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W        W
+W   P    W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 21
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 21
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W        W
+W        W
+W    P   W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 22
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 22
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W     P  W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 23
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 23
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W        W
+W      P W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 24
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 24
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W        W
+W       PW
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 24
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 24
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W      P W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=W
+KEY W
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 25
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 25
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W        W
+W      P W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 26
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 26
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W     P  W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 27
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 27
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W    P   W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 28
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 28
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W   P    W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 28
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 28
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W        W
+W   P    W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 28
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 28
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W  P     W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=W
+KEY W
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 29
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 29
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W  P     W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 29
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 29
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W        W
+W  P     W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 29
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 29
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W P      W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 30
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 30
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W        W
+W        W
+WP       W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=W
+KEY W
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 30
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 30
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+WP       W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 30
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 30
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W        W
+W P      W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=W
+KEY W
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 31
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 31
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W P      W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 32
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 32
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W  P     W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 33
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 33
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W   P    W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 34
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 34
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W    P   W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 35
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 35
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W     P  W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 36
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 36
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W      P W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W       PW
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W      P W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W     P  W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W    P   W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W     P  W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W        W
+W   M  M W
+W      P W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=A
+KEY A
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W     P  W
+W        W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W       MW
+W        W
+W     P  W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W      P W
+W        W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=S
+KEY S
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W   M    W
+W        W
+W      M W
+W        W
+W        W
+W      P W
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+Created ghost threads
+PACMAN THREAD
+comand read
+Receiving play message (2 bytes): op=3 command=D
+KEY D
+Pacman thread joined
+Ghost threads joined
+Accumulated points: 37
+Sending update message to notifications (125 bytes): op=4 width=10 height=10 tempo: 100 victory: 0 game_over: 0 accumulated_points: 37
+WWWWWWWWWW
+W        W
+W        W
+W        W
+W   M    W
+W     M  W
+W        W
+W        W
+W       PW
+WWWWWWWWWW
+Creating threads
+Created pacman thread
+PACMAN THREAD
+Created ghost threads
+comand read
+Receiving play message (2 bytes): op=3 command=W
+KEY W
+Pacman thread joined
+Ghost threads joined
+returned-5

@@ -30,4 +30,6 @@ int pacman_disconnect();
 
 Board receive_board_update(void);
 
+void read_notification_fifo(Board *new_board);
+
 #endif
