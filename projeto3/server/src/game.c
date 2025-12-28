@@ -96,7 +96,7 @@ void* pacman_thread(void *arg) {
 
         sleep_ms(board->tempo * (1 + pacman->passo));
 
-        int client_request_fd = open(client_request_pipe, O_RDONLY);
+        int client_request_fd = open(client_request_pipe, O_NONBLOCK);
         char buffer[1];
         read_full(client_request_fd, buffer, 1);
         int op_code = buffer[0] - '0';

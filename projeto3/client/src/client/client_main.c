@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
         fclose(cmd_fp);
 
     pthread_mutex_destroy(&mutex);
-
+    debug("Cleaning up terminal\n");
     terminal_cleanup();
 
     return 0;
