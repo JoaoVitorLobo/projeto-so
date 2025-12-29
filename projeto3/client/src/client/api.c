@@ -191,7 +191,7 @@ void read_notification_fifo(Board *new_board){
 
     int data_size = sizeof(char) * new_board->width * new_board->height;
     char *data_buffer = (char*) malloc(data_size);
-    read_full(session.notif_pipe_fd, data_buffer, data_size);// precisamos libertar o buffer depois
+    read_full(session.notif_pipe_fd, data_buffer, data_size);// buffer sendo liberado no client_main.c
     new_board->data = data_buffer;
 
     for (int lin = 0; lin < new_board->height; lin++) {
@@ -200,7 +200,6 @@ void read_notification_fifo(Board *new_board){
         }
         debug("\n");
     }
-
 }
 
 Board receive_board_update(void) {

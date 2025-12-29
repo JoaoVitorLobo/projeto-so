@@ -23,24 +23,31 @@ static void *receiver_thread(void *arg) {
 
     debug("RECEIVER THREAD STARTED\n");
 
-    pthread_mutex_lock(&mutex);
-    tempo = board.tempo;
-    pthread_mutex_unlock(&mutex);
 
     while (true) {
         
         Board board = receive_board_update();
 
-        if (!board.data || board.game_over == 1){
+        if (!board.data){
             pthread_mutex_lock(&mutex);
             stop_execution = true;
             pthread_mutex_unlock(&mutex);
             break;
         }
+        pthread_mutex_lock(&mutex);
+        tempo = board.tempo;
+        pthread_mutex_unlock(&mutex);
 
-        
+
         draw_board_client(board);
         refresh_screen();
+
+        if (board.game_over == 1 || board.victory == 1) {
+            pthread_mutex_lock(&mutex);
+            stop_execution = true;
+            pthread_mutex_unlock(&mutex);
+            break;
+        }
 
         free(board.data);
     }
@@ -78,7 +85,7 @@ int main(int argc, char *argv[]) {
     snprintf(notif_pipe_path, MAX_PIPE_PATH_LENGTH,
              "/tmp/%s_notification", client_id);
 
-    open_debug_file("client-debug.log");
+    open_debug_file("client_debug.log");
 
     debug("BEFORE CONNECT\n");
 
@@ -100,7 +107,7 @@ int main(int argc, char *argv[]) {
     int ch;
 
     while (1) {
-        debug("Main loop iteration\n");
+        //debug("Main loop iteration\n");
 
         pthread_mutex_lock(&mutex);
         if (stop_execution){

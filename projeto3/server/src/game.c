@@ -28,6 +28,7 @@ typedef struct {
     DIR* level_dir;
     char *client_request_pipe;
     char *client_notification_pipe;
+    int total_levels;
 } session_thread_arg_t;
 
 typedef struct {
@@ -178,7 +179,7 @@ void* ghost_thread(void *arg) {
     }
 }
 
-void board_to_message(char *message, board_t* game_board, int end_game, int accumulated_points) {
+void board_to_message(char *message, board_t* game_board, int victory, int game_over, int accumulated_points) {
     int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board->width * game_board->height);
     char *ptr = message;
 
@@ -199,12 +200,12 @@ void board_to_message(char *message, board_t* game_board, int end_game, int accu
     ptr += sizeof(int);
 
     // victory
-    int vic = end_game ? 1 : 0;
+    int vic = victory;
     memcpy(ptr, &vic, sizeof(int));
     ptr += sizeof(int);
 
-    // end_game
-    int eg = end_game ? 1 : 0;
+    // game_over
+    int eg = game_over;
     memcpy(ptr, &eg, sizeof(int));
     ptr += sizeof(int);
 
@@ -254,6 +255,7 @@ void* individual_session_thread(void *session_args) {
     DIR* level_dir = thread_arg->level_dir;
     char *client_request_pipe = thread_arg->client_request_pipe;
     char *client_notification_pipe = thread_arg->client_notification_pipe;
+    int total_levels = thread_arg->total_levels;
 
     debug("INDIVIDUAL SESSION THREAD\n");
 
@@ -271,7 +273,10 @@ void* individual_session_thread(void *session_args) {
     write_full(client_notification_fd, message, sizeof(message));
 
     int accumulated_points = 0;
-    bool end_game = false;
+    int end_game = 0;
+    int victory = 0;
+    int game_over = 0;
+    int current_level = 0;
     board_t game_board;
 
     pid_t parent_process = getpid(); // Only the parent process can create backups
@@ -285,11 +290,12 @@ void* individual_session_thread(void *session_args) {
 
         if (strcmp(dot, ".lvl") == 0) {
             load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
+            current_level++;
         
             int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
             char message[data_size];
 
-            board_to_message(message, &game_board, end_game, accumulated_points);
+            board_to_message(message, &game_board, victory, end_game, accumulated_points);
 
             write_full(client_notification_fd, message, data_size);
 
@@ -340,6 +346,11 @@ void* individual_session_thread(void *session_args) {
                 if(result == NEXT_LEVEL) {
                     screen_refresh(&game_board, DRAW_WIN);
                     sleep_ms(game_board.tempo);
+                    if (current_level >= total_levels) {
+                        debug("All levels completed. Victory! current_level=%d total_levels=%d\n", current_level, total_levels);
+                        end_game = 1;
+                        victory = 1;
+                    }
                     debug("returned-5\n");
                     break;
                 }
@@ -407,6 +418,7 @@ void* individual_session_thread(void *session_args) {
                 if(result == QUIT_GAME) {
                     screen_refresh(&game_board, DRAW_GAME_OVER); 
                     sleep_ms(game_board.tempo);
+                    game_over = 1;
                     end_game = true;
                     debug("QUIT_GAME\n");
                     break;
@@ -414,12 +426,17 @@ void* individual_session_thread(void *session_args) {
                 
                 accumulated_points = game_board.pacmans[0].points;
                 debug("Accumulated points: %d\n", accumulated_points);
-                board_to_message(message, &game_board, end_game, accumulated_points);
+            
+                board_to_message(message, &game_board, victory, game_over, accumulated_points);
                 
                 write_full(client_notification_fd, message, data_size);
 
 
             }
+            board_to_message(message, &game_board, victory, game_over, accumulated_points);
+                
+            write_full(client_notification_fd, message, data_size);
+
             unload_level(&game_board);
         }
     }    
@@ -446,6 +463,19 @@ int main(int argc, char** argv) {
         perror("opendir");
         return -1;
     }
+    int total_levels = 0;
+    struct dirent* entry;
+    while ((entry = readdir(level_dir)) != NULL) {
+        if (entry->d_name[0] == '.') continue;
+
+        char *dot = strrchr(entry->d_name, '.');
+        if (!dot) continue;
+        if (strcmp(dot, ".lvl") == 0) {
+            total_levels++;
+        }
+    }
+
+    rewinddir(level_dir);
 
     //int max_games = atoi(argv[2]);
     char* register_pipe_name = argv[3];
@@ -496,6 +526,7 @@ int main(int argc, char** argv) {
     session_args->level_dir = level_dir;
     session_args->client_request_pipe = client_request_pipe;
     session_args->client_notification_pipe = client_notification_pipe;
+    session_args->total_levels = total_levels;
 
 
     pthread_t session_manager_thread;

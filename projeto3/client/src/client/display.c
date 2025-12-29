@@ -124,7 +124,7 @@ void draw_board_client(Board board) {
 
     // Draw score/status at the bottom
     attron(COLOR_PAIR(5));
-    mvprintw(start_row + board.height + 1, 0, "Points: %d",
+    mvprintw(start_row + board.height + 1, 0, "Points: %d\n",
              board.accumulated_points);
     attroff(COLOR_PAIR(5));
 }
@@ -277,7 +277,7 @@ void draw_board(board_t* board, int mode) {
 
     // Draw score/status at the bottom
     attron(COLOR_PAIR(5));
-    mvprintw(start_row + board->height + 1, 0, "Points: %d",
+    mvprintw(start_row + board->height + 1, 0, "Points: %d\n",
              board->pacmans[0].points); // Assuming first pacman for now
     attroff(COLOR_PAIR(5));
 }
