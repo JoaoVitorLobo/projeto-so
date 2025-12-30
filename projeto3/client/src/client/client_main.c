@@ -160,6 +160,8 @@ int main(int argc, char *argv[]) {
         pacman_play(command);
 
     }
+    sleep_ms(1000);
+    terminal_cleanup();
 
     pacman_disconnect();
 
@@ -171,6 +173,7 @@ int main(int argc, char *argv[]) {
     pthread_mutex_destroy(&mutex);
     debug("Cleaning up terminal\n");
     terminal_cleanup();
+    close_debug_file();
 
     return 0;
 }
