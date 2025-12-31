@@ -607,7 +607,7 @@ int main(int argc, char** argv) {
         session_args->empty = &empty;
 
         debug("BEFORE Creating session manager thread\n");
-        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args);
+        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args); //os jogos começam todos 
     }
 
     char* register_pipe_name = argv[3];
@@ -626,9 +626,14 @@ int main(int argc, char** argv) {
     }
 
 
-    int register_pipe_fd = open(register_pipe_name, O_RDONLY);
+    int register_pipe_fd;
 
     while(1){    
+        register_pipe_fd = open(register_pipe_name, O_RDONLY);
+        if(register_pipe_fd < 0){
+            perror("open register fifo");
+            return 1;
+        }
         char buffer[81];
         ssize_t n = read_full(register_pipe_fd, buffer, 81);
         debug("read from register fifo: %s\n", buffer);
@@ -651,6 +656,7 @@ int main(int argc, char** argv) {
 
         debug("Enqueuing client pipes: req=%s, notif=%s\n", client_request_pipe, client_notification_pipe);
         enqueue(client_queue, &queue_mutex, &items, &empty, client_request_pipe, client_notification_pipe);
+        close(register_pipe_fd);
     }
     
     for (int id_thread = 0; id_thread < max_games; id_thread++) {
