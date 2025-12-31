@@ -7,6 +7,7 @@
 #define MAX_GHOSTS 25
 
 #include <pthread.h>
+#include <stdbool.h>
 
 typedef enum {
     REACHED_PORTAL = 1,
@@ -61,6 +62,7 @@ typedef struct {
     char ghosts_files[MAX_GHOSTS][256]; // files with monster movements
     int tempo; // Duracao de cada jogada???
     pthread_rwlock_t state_lock;
+    bool session_active;
 } board_t;
 
 /*Move pacman/monster in a certain direction on the board must check for boundaries, walls and other monsters

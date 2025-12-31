@@ -24,6 +24,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
     // Pacman is optional
     board->pacman_file[0] = '\0';
     board->n_pacmans = 1;
+    board->session_active = true;
 
     strcpy(board->level_name, filename);
     *strrchr(board->level_name, '.') = '\0';
