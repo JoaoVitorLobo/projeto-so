@@ -11,12 +11,28 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #define CONTINUE_PLAY 0
 #define NEXT_LEVEL 1
 #define QUIT_GAME 2
 #define LOAD_BACKUP 3
 #define CREATE_BACKUP 4
+
+
+typedef struct {
+    char client_request_pipe[MAX_PIPE_PATH_LENGTH];
+    char client_notification_pipe[MAX_PIPE_PATH_LENGTH];
+} client_pipes_t;
+
+
+typedef struct {
+    client_pipes_t pipe_data[QUEUE_SIZE];
+    int head;
+    int tail;
+} register_queue_t;
+
+client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_mutex, sem_t* items, sem_t* empty);
 
 typedef struct {
     board_t *board;
@@ -25,10 +41,11 @@ typedef struct {
 
 typedef struct {
     char *level_dir_name;
-    DIR* level_dir;
-    char *client_request_pipe;
-    char *client_notification_pipe;
     int total_levels;
+    register_queue_t *client_queue;
+    pthread_mutex_t *queue_mutex;
+    sem_t *items;
+    sem_t *empty;
 } session_thread_arg_t;
 
 typedef struct {
@@ -89,6 +106,8 @@ void* pacman_thread(void *arg) {
 
     int *retval = malloc(sizeof(int));
 
+    int client_request_fd = open(client_request_pipe, O_RDONLY);
+
     while (true) {
         if(!pacman->alive) {
             *retval = LOAD_BACKUP;
@@ -97,16 +116,18 @@ void* pacman_thread(void *arg) {
 
         sleep_ms(board->tempo * (1 + pacman->passo));
 
-        int client_request_fd = open(client_request_pipe, O_NONBLOCK);
         char buffer[1];
         read_full(client_request_fd, buffer, 1);
         int op_code = buffer[0] - '0';
+        debug("OPCODE FROM PLAY %c\n", buffer[0]);
         if(op_code == OP_CODE_DISCONNECT){
             debug("Receiving disconnect message (1 bytes): op=%c\n", buffer[0]);
             *retval = QUIT_GAME;
+            close(client_request_fd);
             return (void*) retval;
         }
         read_full(client_request_fd, buffer, 1);
+        debug("COMMAND FROM PLAY %c\n", buffer[0]);
         debug("comand read\n");
         char command = buffer[0];
         debug("Receiving play message (2 bytes): op=%d command=%c\n", op_code, command);
@@ -124,11 +145,13 @@ void* pacman_thread(void *arg) {
         // QUIT
         if (play->command == 'Q') {
             *retval = QUIT_GAME;
+            close(client_request_fd);
             return (void*) retval;
         }
         // FORK
         if (play->command == 'G') {
             *retval = CREATE_BACKUP;
+            close(client_request_fd);
             return (void*) retval;
         }
 
@@ -153,6 +176,7 @@ void* pacman_thread(void *arg) {
         pthread_rwlock_unlock(&board->state_lock);
     }
     pthread_rwlock_unlock(&board->state_lock);
+    close(client_request_fd);
     return (void*) retval;
 }
 
@@ -252,10 +276,20 @@ void* individual_session_thread(void *session_args) {
     session_thread_arg_t *thread_arg = (session_thread_arg_t *) session_args;
 
     char *level_dir_name = thread_arg->level_dir_name;
-    DIR* level_dir = thread_arg->level_dir;
-    char *client_request_pipe = thread_arg->client_request_pipe;
-    char *client_notification_pipe = thread_arg->client_notification_pipe;
     int total_levels = thread_arg->total_levels;
+    register_queue_t* client_queue = thread_arg->client_queue;
+    pthread_mutex_t* queue_mutex = thread_arg->queue_mutex;
+    sem_t* items = thread_arg->items;
+    sem_t* empty = thread_arg->empty;
+
+    DIR* level_dir = opendir(level_dir_name);
+
+    free(thread_arg);
+
+    client_pipes_t client_pipe_data = dequeue(client_queue, queue_mutex, items, empty);
+    
+    char *client_request_pipe = client_pipe_data.client_request_pipe;
+    char *client_notification_pipe = client_pipe_data.client_notification_pipe;
 
     debug("INDIVIDUAL SESSION THREAD\n");
 
@@ -442,7 +476,64 @@ void* individual_session_thread(void *session_args) {
     }    
 
     close(client_notification_fd);
+    closedir(level_dir);
     return NULL;
+}
+
+int count_levels(DIR* level_dir) {
+    int count = 0;
+    struct dirent* entry;
+    while ((entry = readdir(level_dir)) != NULL) {
+        if (entry->d_name[0] == '.') continue;
+
+        char *dot = strrchr(entry->d_name, '.');
+        if (!dot) continue;
+        if (strcmp(dot, ".lvl") == 0) {
+            count++;
+        }
+    }
+    rewinddir(level_dir);
+    return count;
+}
+
+void queue_init(register_queue_t* register_queue, pthread_mutex_t* queue_mutex, sem_t* items, sem_t* empty) {
+    register_queue->head = register_queue->tail = 0;
+    pthread_mutex_init(queue_mutex, NULL);
+    sem_init(items, 0, 0);  
+    sem_init(empty, 0, QUEUE_SIZE);
+}
+
+void enqueue(register_queue_t* register_queue, pthread_mutex_t* queue_mutex, sem_t* items, sem_t* empty, char *req, char *notif) {
+    sem_wait(empty);    
+    pthread_mutex_lock(queue_mutex);
+
+    client_pipes_t pipe_data;
+    strcpy(pipe_data.client_request_pipe, req);
+    strcpy(pipe_data.client_notification_pipe, notif);
+    
+    debug("Enqueuing client pipes: req=%s, notif=%s\n", req, notif);
+    debug("new queue:");
+    for (int i = 0; i < register_queue->tail; i++) {
+        debug(" [%d]: req=%s, notif=%s;", i, register_queue->pipe_data[i].client_request_pipe, register_queue->pipe_data[i].client_notification_pipe);
+    }
+    debug("\n");
+    register_queue->pipe_data[register_queue->tail] = pipe_data;
+    register_queue->tail = (register_queue->tail + 1) % QUEUE_SIZE;
+    
+    pthread_mutex_unlock(queue_mutex);
+    sem_post(items);  // sinaliza novo item
+}
+
+client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_mutex, sem_t* items, sem_t* empty) {
+    sem_wait(items);
+    pthread_mutex_lock(queue_mutex);
+    
+    client_pipes_t c = register_queue->pipe_data[register_queue->head];
+    register_queue->head = (register_queue->head + 1) % QUEUE_SIZE;
+    
+    pthread_mutex_unlock(queue_mutex);
+    sem_post(empty);  
+    return c;
 }
 
 int main(int argc, char** argv) {
@@ -463,21 +554,34 @@ int main(int argc, char** argv) {
         perror("opendir");
         return -1;
     }
-    int total_levels = 0;
-    struct dirent* entry;
-    while ((entry = readdir(level_dir)) != NULL) {
-        if (entry->d_name[0] == '.') continue;
+    int total_levels = count_levels(level_dir);
 
-        char *dot = strrchr(entry->d_name, '.');
-        if (!dot) continue;
-        if (strcmp(dot, ".lvl") == 0) {
-            total_levels++;
-        }
+    closedir(level_dir);
+
+    int max_games = atoi(argv[2]);
+
+    register_queue_t* client_queue = malloc(sizeof(register_queue_t));
+    pthread_mutex_t queue_mutex;
+    sem_t items, empty;    
+
+    queue_init(client_queue, &queue_mutex, &items, &empty);
+
+    pthread_t* sessions = malloc(sizeof(pthread_t) * max_games);
+
+
+    for (int id_thread = 0; id_thread < max_games; id_thread++) {
+        session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t));
+        session_args->level_dir_name = argv[1];
+        session_args->total_levels = total_levels;
+        session_args->client_queue = client_queue;
+        session_args->queue_mutex = &queue_mutex;
+        session_args->items = &items;
+        session_args->empty = &empty;
+
+        debug("BEFORE Creating session manager thread\n");
+        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args);
     }
 
-    rewinddir(level_dir);
-
-    //int max_games = atoi(argv[2]);
     char* register_pipe_name = argv[3];
 
     if (level_dir == NULL) {
@@ -493,59 +597,46 @@ int main(int argc, char** argv) {
         return 1;  
     }
 
-    debug("Opening register fifo: %s\n", register_pipe_name);
+
     int register_pipe_fd = open(register_pipe_name, O_RDONLY);
-    debug("Opened register fifo: %s\n", register_pipe_name);
-    char buffer[81];
-    //int n_bytes_read = 0;
-    debug("BEFORE Reading register fifo: %s\n", register_pipe_name);
-    read(register_pipe_fd, buffer, 81);
-    debug("AFTER Read from register fifo: %s\n", buffer);
 
-    char op_code = buffer[0];
-    if(op_code != (char)('0' + OP_CODE_CONNECT)){
-        perror("op_code");
-        return 1;
+    while(1){    
+        char buffer[81];
+        ssize_t n = read_full(register_pipe_fd, buffer, 81);
+        debug("read from register fifo: %s\n", buffer);
+        if (n <= 0) break; 
+
+        char op_code = buffer[0];
+        if(op_code != (char)('0' + OP_CODE_CONNECT)){
+            perror("op_code");
+            return 1;
+        }
+
+        char client_request_pipe[41];
+        char client_notification_pipe[41];
+
+        memcpy(client_request_pipe, buffer + 1, 40);
+        client_request_pipe[40] = '\0';
+
+        memcpy(client_notification_pipe, buffer + 41, 40);
+        client_notification_pipe[40] = '\0';
+
+        debug("Enqueuing client pipes: req=%s, notif=%s\n", client_request_pipe, client_notification_pipe);
+        enqueue(client_queue, &queue_mutex, &items, &empty, client_request_pipe, client_notification_pipe);
     }
-    op_code = op_code;
-    char client_request_pipe[41];
-    char client_notification_pipe[41];
-
-    memcpy(client_request_pipe, buffer + 1, 40);
-    client_request_pipe[40] = '\0';
-
-    memcpy(client_notification_pipe, buffer + 41, 40);
-    client_notification_pipe[40] = '\0';
-
-    debug("Receiving register message from connect (81 bytes): op=%c client_request_pipe=%s client_notification_pipe=%s\n", op_code, client_request_pipe, client_notification_pipe);
-
-    debug("BEFORE Creating session manager thread\n");
-
-    session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t));
-    session_args->level_dir_name = argv[1];
-    session_args->level_dir = level_dir;
-    session_args->client_request_pipe = client_request_pipe;
-    session_args->client_notification_pipe = client_notification_pipe;
-    session_args->total_levels = total_levels;
-
-
-    pthread_t session_manager_thread;
-    debug("BEFORE Creating session manager thread\n");
-    pthread_create(&session_manager_thread, NULL, individual_session_thread, session_args);
     
-    pthread_join(session_manager_thread, NULL);
+    for (int id_thread = 0; id_thread < max_games; id_thread++) {
+        pthread_join(sessions[id_thread], NULL);
+    }
+
+    free(client_queue);
 
     close_debug_file();
 
     close(register_pipe_fd);
 
-    if (closedir(level_dir) == -1) {
-        fprintf(stderr, "Failed to close directory\n");
-        return 0;
-    }
 
     unlink(register_pipe_name);
-    free(session_args);
 
     return 0;
 }

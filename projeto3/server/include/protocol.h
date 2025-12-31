@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #define MAX_PIPE_PATH_LENGTH 40
+#define QUEUE_SIZE 64
 
 enum {
   OP_CODE_CONNECT = 1,
