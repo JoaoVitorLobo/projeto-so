@@ -419,6 +419,7 @@ void* individual_session_thread(void *session_args) {
                     if (current_level >= total_levels) {
                         debug("All levels completed. Victory! current_level=%d total_levels=%d\n", current_level, total_levels);
                         end_game = 1;
+                        debug("victory = 1\n");
                         victory = 1;
                     }
                     debug("returned-5\n");
@@ -488,6 +489,7 @@ void* individual_session_thread(void *session_args) {
                 if(result == QUIT_GAME) {
                     screen_refresh(&game_board, DRAW_GAME_OVER); 
                     sleep_ms(game_board.tempo);
+                    debug("game over = 1\n");
                     game_over = 1;
                     end_game = true;
                     debug("QUIT_GAME\n");
@@ -497,8 +499,15 @@ void* individual_session_thread(void *session_args) {
                 accumulated_points = game_board.pacmans[0].points;
                 debug("Accumulated points: %d\n", accumulated_points);
 
-
             }
+            int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
+            char message[data_size];
+
+            board_to_message(message, &game_board, victory, game_over, accumulated_points);
+
+            debug("WRITING IN: %d\n", client_notification_fd);
+            write_full(client_notification_fd, message, data_size);
+            
             unload_level(&game_board);
         }
     }   
