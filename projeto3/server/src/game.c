@@ -291,7 +291,7 @@ void board_to_message(char *message, board_t* game_board, int victory, int game_
 
 void* individual_session_thread(void *session_args) {
     session_thread_arg_t *thread_arg = (session_thread_arg_t *) session_args;
-
+    
     char *level_dir_name = thread_arg->level_dir_name;
     int total_levels = thread_arg->total_levels;
     register_queue_t* client_queue = thread_arg->client_queue;
@@ -333,9 +333,11 @@ void* individual_session_thread(void *session_args) {
     pid_t parent_process = getpid(); // Only the parent process can create backups
 
     struct dirent* entry;
-    while ((entry = readdir(level_dir)) != NULL && !end_game) {
+    // o servidor deve quando não tem um cliente esperar por um, e quando o cliente desconecta ou o jogo acaba, voltar a esperar por outro cliente
+    //implica reiniciar o processamento do jogo
+    while ((entry = readdir(level_dir)) != NULL && !end_game) { // o loop nao pode acabar quando o jogo acaba, tem de esperar por outro cliente
         if (entry->d_name[0] == '.') continue;
-
+        // tem de esperar por cliente
         char *dot = strrchr(entry->d_name, '.');
         if (!dot) continue;
 
@@ -509,6 +511,7 @@ void* individual_session_thread(void *session_args) {
             write_full(client_notification_fd, message, data_size);
             
             unload_level(&game_board);
+            //por exemplo dar reset no readdir porque o jogo tem de reiniciar e esperar por outro cliente
         }
     }   
 
@@ -613,10 +616,10 @@ int main(int argc, char** argv) {
         session_args->client_queue = client_queue;
         session_args->queue_mutex = &queue_mutex;
         session_args->items = &items;
-        session_args->empty = &empty;
+        session_args->empty = &empty; //é preciso que a main saiba se uma certa thread está livre ou não e usar isso para reiniciar o jogo usando ainda a mesma thread
 
         debug("BEFORE Creating session manager thread\n");
-        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args); //os jogos começam todos 
+        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args); 
     }
 
     char* register_pipe_name = argv[3];
@@ -641,19 +644,20 @@ int main(int argc, char** argv) {
         register_pipe_fd = open(register_pipe_name, O_RDONLY);
         if(register_pipe_fd < 0){
             perror("open register fifo");
-            return 1;
+            return 1;//algo me diz que não suposto darmos return aqui (falta libertar memória etc)
         }
         char buffer[81];
         ssize_t n = read_full(register_pipe_fd, buffer, 81);
-        debug("read from register fifo: %s\n", buffer);
+        debug("read from register fifo: %s\n", buffer); 
         if (n <= 0) break; 
-
+        // é preciso que ao ler a mensagem de registo o server confirme a que thread está a ligar o cliente
         char op_code = buffer[0];
         if(op_code != (char)('0' + OP_CODE_CONNECT)){
             perror("op_code");
             return 1;
         }
-
+        //o servidor não faz nada quando recebe o op_code de disconnect, logo não sabe se uma thread está livre ou não
+        //e fecha a thread quando o cliente desconecta ou o jogo acaba
         char client_request_pipe[41];
         char client_notification_pipe[41];
 
@@ -672,7 +676,7 @@ int main(int argc, char** argv) {
         pthread_join(sessions[id_thread], NULL);
     }
 
-    free(client_queue);
+    free(client_queue); // provavelmente falta libertar mais coisas aqui
 
     close_debug_file();
 
