@@ -42,7 +42,7 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
 
     char absolut_server_pipe_path[MAX_PIPE_PATH_LENGTH *2];
     snprintf(absolut_server_pipe_path, sizeof(absolut_server_pipe_path), "../server/%s", server_pipe_path);
-    int server_pipe_fd = open(absolut_server_pipe_path, O_WRONLY);
+    int server_pipe_fd = open(absolut_server_pipe_path, O_RDWR);
     debug("Opened server pipe: %s\n", absolut_server_pipe_path);
 
 
@@ -59,7 +59,7 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
     debug("Closed server pipe: %s\n", server_pipe_path);
 
 
-    int notif_pipe_fd = open(notif_pipe_path, O_RDONLY);
+    int notif_pipe_fd = open(notif_pipe_path, O_RDWR);
     debug("Opened notif pipe: %s\n", notif_pipe_path);
 
     session.req_pipe_fd = -1;
@@ -82,7 +82,7 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
 
   void pacman_play(char command) {
     if(session.req_pipe_fd < 0){
-        int req_pipe_fd = open(session.req_pipe_path, O_WRONLY);
+        int req_pipe_fd = open(session.req_pipe_path, O_RDWR);
         debug("Opened req pipe: %s - play\n", session.req_pipe_path);
         session.req_pipe_fd = req_pipe_fd;
 
@@ -102,7 +102,7 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
 
 int pacman_disconnect() {
     if (session.req_pipe_fd < 0) {
-        int req_pipe_fd = open(session.req_pipe_path, O_WRONLY);
+        int req_pipe_fd = open(session.req_pipe_path, O_RDWR);
         debug("Opened req pipe: %s - disconnect\n", session.req_pipe_path);
         session.req_pipe_fd = req_pipe_fd;
     }

@@ -108,6 +108,7 @@ void* ncurses_thread(void *arg) {
 
         debug("WRITING IN: %d\n", client_notification_fd);
         write_full(client_notification_fd, message, data_size);
+        debug(".");
     }
     return NULL;
 }
@@ -134,18 +135,34 @@ void* pacman_thread(void *arg) {
         sleep_ms(board->tempo * (1 + pacman->passo));
 
         char buffer[1];
-        read_full(client_request_fd, buffer, 1);
+        ssize_t n;
+        n = read_full(client_request_fd, buffer, 1);
+        if (n != 1) {
+            debug("Failed to read opcode (n=%zd)\n", n);
+            close(client_request_fd);
+            return (void*) retval;
+        }
+
         int op_code = buffer[0] - '0';
         debug("OPCODE FROM PLAY %c\n", buffer[0]);
+
         if(op_code == OP_CODE_DISCONNECT){
             debug("Receiving disconnect message (1 bytes): op=%c\n", buffer[0]);
             *retval = QUIT_GAME;
             close(client_request_fd);
             return (void*) retval;
         }
-        read_full(client_request_fd, buffer, 1);
+
+        n = read_full(client_request_fd, buffer, 1);
+        if (n != 1) {
+            debug("Failed to read command (n=%zd)\n", n);
+            close(client_request_fd);
+            return (void*) retval;
+        }
+
         debug("COMMAND FROM PLAY %c\n", buffer[0]);
         debug("comand read\n");
+
         char command = buffer[0];
         debug("Receiving play message (2 bytes): op=%d command=%c\n", op_code, command);
 
@@ -313,7 +330,7 @@ void* individual_session_thread(void *session_args) {
     char message[2];
     message[0] = (char)('0' + OP_CODE_CONNECT);
 
-    int client_notification_fd = open(client_notification_pipe, O_WRONLY);
+    int client_notification_fd = open(client_notification_pipe, O_RDWR);
     if (client_notification_fd < 0) {
         perror("open client fifo");
         message[1] = '1'; 
@@ -408,10 +425,17 @@ void* individual_session_thread(void *session_args) {
                 debug("Ghost threads joined\n");
 
                 free(ghost_tids);
+                debug("Freed ghost tids\n");
                 free(pacman_arg);
+                debug("Freed pacman arg\n");
+                //free(ncurses_arg);
+                debug("Freed ncurses arg\n");
 
                 int result = *retval;
                 free(retval);
+                debug("Freed pacman retval\n");
+
+                debug("Result from pacman thread: %d\n", result);
 
                 if(result == NEXT_LEVEL) {
                     screen_refresh(&game_board, DRAW_WIN);
@@ -492,6 +516,7 @@ void* individual_session_thread(void *session_args) {
                     debug("game over = 1\n");
                     game_over = 1;
                     end_game = true;
+                    game_board.session_active = false;
                     debug("QUIT_GAME\n");
                     break;
                 }
@@ -635,18 +660,25 @@ int main(int argc, char** argv) {
     }
 
 
-    int register_pipe_fd;
+    int register_pipe_fd = open(register_pipe_name, O_RDWR);
+    if(register_pipe_fd < 0){
+        perror("open register fifo");
+        return 1;
+    }
 
     while(1){    
-        register_pipe_fd = open(register_pipe_name, O_RDONLY);
-        if(register_pipe_fd < 0){
-            perror("open register fifo");
-            return 1;
-        }
         char buffer[81];
         ssize_t n = read_full(register_pipe_fd, buffer, 81);
-        debug("read from register fifo: %s\n", buffer);
-        if (n <= 0) break; 
+        debug("read from register fifo: op_code=%c request=%s notification=%s\n", buffer[0], buffer + 1, buffer + 41);
+        if (n < 0) {
+            perror("read register fifo");
+            continue; // erro de leitura → continua vivo
+        }
+
+        if (n == 0) {
+            // Não deveria acontecer com O_RDWR, mas por segurança:
+            continue;
+        }
 
         char op_code = buffer[0];
         if(op_code != (char)('0' + OP_CODE_CONNECT)){
@@ -665,8 +697,9 @@ int main(int argc, char** argv) {
 
         debug("Enqueuing client pipes: req=%s, notif=%s\n", client_request_pipe, client_notification_pipe);
         enqueue(client_queue, &queue_mutex, &items, &empty, client_request_pipe, client_notification_pipe);
-        close(register_pipe_fd);
     }
+
+    close(register_pipe_fd);
     
     for (int id_thread = 0; id_thread < max_games; id_thread++) {
         pthread_join(sessions[id_thread], NULL);
