@@ -21,7 +21,7 @@ int terminal_init() {
     timeout(1000);
 
     // Make getch() non-blocking (return ERR if no input)
-    nodelay(stdscr, TRUE); // Uncomment if non-blocking input is desired
+    // nodelay(stdscr, TRUE); // Uncomment if non-blocking input is desired
 
     // Hide the cursor
     curs_set(0);
@@ -300,7 +300,7 @@ char get_input() {
 
     // getch() returns ERR if no input is available
     if (ch == ERR) {
-        return 'K'; // No input
+        return '\0'; // No input
     }
 
     ch = toupper((char)ch);
@@ -316,7 +316,7 @@ char get_input() {
             return (char)ch;
         
         default:
-            return 'K';
+            return '\0';
     }
 }
 

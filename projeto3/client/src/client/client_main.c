@@ -146,6 +146,9 @@ int main(int argc, char *argv[]) {
             command = toupper(command);
         }
 
+        if (command == '\0')
+            continue;
+
         if (command == 'Q') {
             debug("Client pressed 'Q', quitting game\n");
             break;

@@ -49,13 +49,6 @@ typedef struct {
     sem_t *empty;
 } session_thread_arg_t;
 
-typedef struct {
-    board_t *board;
-    int* victory;
-    int* game_over;
-    int* accumulated_points;
-    int client_notification_fd;
-} ncurses_thread_arg_t;
 
 typedef struct {
     board_t *board;
@@ -89,29 +82,6 @@ void screen_refresh(board_t * game_board, int mode) {
     refresh_screen();     
 }
 
-void* ncurses_thread(void *arg) {
-    ncurses_thread_arg_t *ncurses_arg = (ncurses_thread_arg_t*) arg;
-    board_t *board = ncurses_arg->board;
-    int* victory = ncurses_arg->victory;
-    int* game_over = ncurses_arg->game_over;
-    int* accumulated_points = ncurses_arg->accumulated_points;
-    int client_notification_fd = ncurses_arg->client_notification_fd;
-
-    free(ncurses_arg);
-
-    while (board->session_active) {
-        sleep_ms(board->tempo);
-        int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* board->width * board->height);
-        char message[data_size];
-
-        board_to_message(message, board, *victory, *game_over, *accumulated_points);
-
-        debug("WRITING IN: %d\n", client_notification_fd);
-        write_full(client_notification_fd, message, data_size);
-        debug(".");
-    }
-    return NULL;
-}
 
 void* pacman_thread(void *arg) {
     pacman_thread_arg_t *pacman_arg = (pacman_thread_arg_t*) arg;
@@ -124,7 +94,7 @@ void* pacman_thread(void *arg) {
 
     int *retval = malloc(sizeof(int));
 
-    int client_request_fd = open(client_request_pipe, O_RDONLY);
+    int client_request_fd = open(client_request_pipe, O_NONBLOCK | O_RDWR);
 
     while (true) {
         if(!pacman->alive) {
@@ -175,13 +145,6 @@ void* pacman_thread(void *arg) {
 
 
         debug("KEY %c\n", play->command);
-
-        // KEEP PLAYING
-        if (play->command == 'K') {
-            *retval = CONTINUE_PLAY;
-            close(client_request_fd);
-            return (void*) retval;
-        }
 
         // QUIT
         if (play->command == 'Q') {
@@ -370,8 +333,16 @@ void* individual_session_thread(void *session_args) {
                 load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
                 current_level++;
 
+                int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
+                char message[data_size];
+
+                board_to_message(message, &game_board, victory, end_game, accumulated_points);
+
+                debug("WRITING IN: %d\n", client_notification_fd);
+                write_full(client_notification_fd, message, data_size);
+
                 while(true) {
-                    pthread_t ncurses_tid, pacman_tid;
+                    pthread_t pacman_tid;
                     pthread_t *ghost_tids = malloc(game_board.n_ghosts * sizeof(pthread_t));
 
                     thread_shutdown = 0;
@@ -393,22 +364,6 @@ void* individual_session_thread(void *session_args) {
                     }
                     debug("Created ghost threads\n");
                     
-                    game_board.session_active = true;
-
-                    ncurses_thread_arg_t *ncurses_arg = malloc(sizeof(ncurses_thread_arg_t));
-                    if (ncurses_arg == NULL) {
-                        perror("malloc ncurses_arg");
-                        thread_shutdown = 1;
-                        break;
-                    }
-                    ncurses_arg->board = &game_board;
-                    ncurses_arg->victory = &victory;
-                    ncurses_arg->game_over = &game_over;
-                    ncurses_arg->accumulated_points = &accumulated_points;
-                    ncurses_arg->client_notification_fd = client_notification_fd;
-                    pthread_create(&ncurses_tid, NULL, ncurses_thread, ncurses_arg);
-
-
                     int *retval;
                     pthread_join(pacman_tid, (void**)&retval); // ele não pode ficar à espera do pacman acabar, pois assim só dá refresh quando acaba/troca de nivel
                     debug("Pacman thread joined\n");
@@ -420,9 +375,6 @@ void* individual_session_thread(void *session_args) {
                     for (int i = 0; i < game_board.n_ghosts; i++) {
                         pthread_join(ghost_tids[i], NULL);
                     }
-
-                    game_board.session_active = false;
-                    pthread_join(ncurses_tid, NULL);
 
                     debug("Ghost threads joined\n");
 
@@ -526,10 +478,11 @@ void* individual_session_thread(void *session_args) {
                     accumulated_points = game_board.pacmans[0].points;
                     debug("Accumulated points: %d\n", accumulated_points);
 
-                }
-                int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
-                char message[data_size];
+                    board_to_message(message, &game_board, victory, game_over, accumulated_points);
+                
+                    write_full(client_notification_fd, message, data_size);
 
+                }
                 board_to_message(message, &game_board, victory, game_over, accumulated_points);
 
                 debug("WRITING IN: %d\n", client_notification_fd);
