@@ -157,7 +157,7 @@ char get_input() {
 
     // getch() returns ERR if no input is available
     if (ch == ERR) {
-        return '\0'; // No input
+        return 'K'; // No input
     }
 
     ch = toupper((char)ch);
@@ -173,7 +173,7 @@ char get_input() {
             return (char)ch;
         
         default:
-            return '\0';
+            return 'K';
     }
 }
 

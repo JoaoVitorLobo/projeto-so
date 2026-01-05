@@ -176,6 +176,13 @@ void* pacman_thread(void *arg) {
 
         debug("KEY %c\n", play->command);
 
+        // KEEP PLAYING
+        if (play->command == 'K') {
+            *retval = CONTINUE_PLAY;
+            close(client_request_fd);
+            return (void*) retval;
+        }
+
         // QUIT
         if (play->command == 'Q') {
             *retval = QUIT_GAME;
