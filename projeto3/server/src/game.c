@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "board.h"
 #include "display.h"
 #include "protocol.h"
@@ -12,6 +14,10 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <signal.h>
+#include <stdatomic.h>
+#include <errno.h>
+
 
 #define CONTINUE_PLAY 0
 #define NEXT_LEVEL 1
@@ -19,6 +25,13 @@
 #define LOAD_BACKUP 3
 #define CREATE_BACKUP 4
 
+
+volatile sig_atomic_t sigusr1_received = 0;
+
+void handle_sigusr1() {
+    debug("SIGUSR1 received\n");
+    sigusr1_received = 1;
+}
 
 typedef struct {
     char client_request_pipe[MAX_PIPE_PATH_LENGTH];
@@ -43,8 +56,11 @@ typedef struct {
 typedef struct {
     char *level_dir_name;
     int total_levels;
+    int points;
+    int client_id;
     register_queue_t *client_queue;
     pthread_mutex_t *queue_mutex;
+    pthread_mutex_t *session_mutex;
     sem_t *items;
     sem_t *empty;
 } session_thread_arg_t;
@@ -90,6 +106,10 @@ void screen_refresh(board_t * game_board, int mode) {
 }
 
 void* ncurses_thread(void *arg) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
     ncurses_thread_arg_t *ncurses_arg = (ncurses_thread_arg_t*) arg;
     board_t *board = ncurses_arg->board;
     int* victory = ncurses_arg->victory;
@@ -114,6 +134,10 @@ void* ncurses_thread(void *arg) {
 }
 
 void* pacman_thread(void *arg) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
     pacman_thread_arg_t *pacman_arg = (pacman_thread_arg_t*) arg;
 
     board_t *board = pacman_arg->board;
@@ -196,7 +220,7 @@ void* pacman_thread(void *arg) {
             return (void*) retval;
         }
 
-        pthread_rwlock_rdlock(&board->state_lock);
+        pthread_rwlock_wrlock(&board->state_lock);
 
         int result = move_pacman(board, 0, play);
         if (result == REACHED_PORTAL) {
@@ -225,6 +249,10 @@ void* ghost_thread(void *arg) {
     ghost_thread_arg_t *ghost_arg = (ghost_thread_arg_t*) arg;
     board_t *board = ghost_arg->board;
     int ghost_ind = ghost_arg->ghost_index;
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
 
     free(ghost_arg);
 
@@ -314,6 +342,10 @@ void board_to_message(char *message, board_t* game_board, int victory, int game_
 }
 
 void* individual_session_thread(void *session_args) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
     session_thread_arg_t *thread_arg = (session_thread_arg_t *) session_args;
 
     char *level_dir_name = thread_arg->level_dir_name;
@@ -325,8 +357,6 @@ void* individual_session_thread(void *session_args) {
 
     DIR* level_dir = opendir(level_dir_name);
 
-    free(thread_arg);
-
     debug("INDIVIDUAL SESSION THREAD\n");
     
     while(true) {
@@ -334,6 +364,11 @@ void* individual_session_thread(void *session_args) {
 
         char *client_request_pipe = client_pipe_data.client_request_pipe;
         char *client_notification_pipe = client_pipe_data.client_notification_pipe;
+
+        pthread_mutex_lock(thread_arg->session_mutex);
+        sscanf(client_request_pipe, "/tmp/%d_request", &thread_arg->client_id);
+        debug("======================================\n");
+        pthread_mutex_unlock(thread_arg->session_mutex);
 
         debug("!! New Client Playing !!: resquest: %s  //  notif: %s\n", client_request_pipe, client_notification_pipe);
 
@@ -349,7 +384,6 @@ void* individual_session_thread(void *session_args) {
         message[1] = '0'; 
         debug("Sending return message to connect (2 bytes): op=%c result=%c\n", message[0], message[1]);
         write_full(client_notification_fd, message, sizeof(message));
-
         int accumulated_points = 0;
         int end_game = 0;
         int victory = 0;
@@ -416,14 +450,12 @@ void* individual_session_thread(void *session_args) {
                     pthread_rwlock_wrlock(&game_board.state_lock);
                     thread_shutdown = 1;
                     pthread_rwlock_unlock(&game_board.state_lock);
-
                     for (int i = 0; i < game_board.n_ghosts; i++) {
                         pthread_join(ghost_tids[i], NULL);
                     }
-
+                    
                     game_board.session_active = false;
                     pthread_join(ncurses_tid, NULL);
-
                     debug("Ghost threads joined\n");
 
                     free(ghost_tids);
@@ -432,6 +464,10 @@ void* individual_session_thread(void *session_args) {
                     debug("Freed pacman arg\n");
                     //free(ncurses_arg);
                     debug("Freed ncurses arg\n");
+
+                    pthread_mutex_lock(thread_arg->session_mutex);
+                    thread_arg->points = accumulated_points;
+                    pthread_mutex_unlock(thread_arg->session_mutex);
 
                     int result = *retval;
                     free(retval);
@@ -539,6 +575,7 @@ void* individual_session_thread(void *session_args) {
             }
         }   
         close(client_notification_fd);
+        
         rewinddir(level_dir);
         debug("!! New Slot Available for New Client !!\n");
     }
@@ -611,6 +648,49 @@ client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_
     return c;
 }
 
+void write_top5_points(session_thread_arg_t* session_args, int max_games) {
+    int top5_file = open("top5.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (top5_file < 0) {
+        debug("open top5.txt");
+        return;
+    }
+    int top[5][2] = {{0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}};
+    for(int i = 0; i < max_games; i++) {
+        int score = 0;
+        int id = -1;
+        
+        pthread_mutex_lock(session_args[i].session_mutex);
+        score = session_args[i].points;
+        id = session_args[i].client_id;
+        pthread_mutex_unlock(session_args[i].session_mutex);
+        debug("Client %d has %d points===\n", session_args[i].client_id, session_args[i].points);
+        for(int j = 0; j < 5; j++) {
+            if (score > top[j][0] || (top[j][1] != -1 && 0 == top[j][0])) {
+                for(int k = 4; k > j; k--) {
+                    top[k][0] = top[k-1][0];
+                    top[k][1] = top[k-1][1];
+                }
+                top[j][0] = score;
+                top[j][1] = id;
+                break;
+            }
+        }
+        
+    }
+    char buffer[32];
+    for(int j = 0; j < 5; j++) {
+        if (top[j][1] != -1) {
+            snprintf(buffer,sizeof(buffer), "Client %d: %d points\n", top[j][1], top[j][0]);
+            write(top5_file, buffer, strlen(buffer));
+        }
+    }
+    if(close(top5_file) < 0){
+        perror("close top5.txt");
+        return;
+    }
+    return;
+}
+
 int main(int argc, char** argv) {
     if ( argc < 4) {
         fprintf(stderr,
@@ -618,7 +698,11 @@ int main(int argc, char** argv) {
             argv[0]);
         return 1;
     }
-
+    struct sigaction sa;
+    sa.sa_handler = handle_sigusr1;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
     // Random seed for any random movements
     srand((unsigned int)time(NULL));
     open_debug_file("debug_server.log");
@@ -642,19 +726,25 @@ int main(int argc, char** argv) {
     queue_init(client_queue, &queue_mutex, &items, &empty);
 
     pthread_t* sessions = malloc(sizeof(pthread_t) * max_games);
+    session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t)* max_games);
+
+    
 
 
     for (int id_thread = 0; id_thread < max_games; id_thread++) {
-        session_thread_arg_t* session_args = malloc(sizeof(session_thread_arg_t));
-        session_args->level_dir_name = argv[1];
-        session_args->total_levels = total_levels;
-        session_args->client_queue = client_queue;
-        session_args->queue_mutex = &queue_mutex;
-        session_args->items = &items;
-        session_args->empty = &empty;
+        session_args[id_thread].session_mutex = malloc(sizeof(pthread_mutex_t));
+        pthread_mutex_init(session_args[id_thread].session_mutex, NULL);
+        session_args[id_thread].level_dir_name = argv[1];
+        session_args[id_thread].total_levels = total_levels;
+        session_args[id_thread].client_queue = client_queue;
+        session_args[id_thread].queue_mutex = &queue_mutex;
+        session_args[id_thread].items = &items;
+        session_args[id_thread].empty = &empty;
+        session_args[id_thread].points = 0;
+        session_args[id_thread].client_id = -1;
 
         debug("BEFORE Creating session manager thread\n");
-        pthread_create(&sessions[id_thread], NULL, individual_session_thread, session_args); //os jogos começam todos 
+        pthread_create(&sessions[id_thread], NULL, individual_session_thread, &session_args[id_thread]); //os jogos começam todos 
     }
 
     char* register_pipe_name = argv[3];
@@ -680,8 +770,14 @@ int main(int argc, char** argv) {
     }
 
     while(1){    
+        if (sigusr1_received) {
+            debug("Writing top5 points due to SIGUSR1\n");
+            write_top5_points(session_args, max_games);
+            sigusr1_received = 0;
+        }
         char buffer[81];
         debug("before read reg\n");
+        errno = 0;
         ssize_t n = read_full(register_pipe_fd, buffer, 81);
         debug("!! NEW REGISTER MESSAGE!!: op_code=%c request=%s notification=%s\n", buffer[0], buffer + 1, buffer + 41);
         if (n < 0) {
@@ -716,14 +812,18 @@ int main(int argc, char** argv) {
     
     for (int id_thread = 0; id_thread < max_games; id_thread++) {
         pthread_join(sessions[id_thread], NULL);
+        pthread_mutex_destroy(session_args[id_thread].session_mutex);
+        free(session_args[id_thread].session_mutex);
+        
     }
-
+    
     free(client_queue);
 
     close_debug_file();
 
     close(register_pipe_fd);
-
+    free(sessions);
+    free(session_args);
 
     unlink(register_pipe_name);
 
