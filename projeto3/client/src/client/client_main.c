@@ -104,7 +104,23 @@ int main(int argc, char *argv[]) {
     refresh_screen();
 
     char command;
-    int ch;
+    char buffer[4096];
+    int curr_command_index = 0;
+    char* commands = (char*) malloc(sizeof(char));
+    int n_commands = 0;
+
+    if (cmd_fp){
+        while(read_line(fileno(cmd_fp), buffer) != 0){
+            if (strncmp(buffer, "#", 1) == 0 || strncmp(buffer, "P", 1) == 0 || strncmp(buffer, "\n", 1) == 0){
+                continue;
+            } 
+            else {
+                commands = (char*) realloc(commands, (n_commands + 1) * sizeof(char));
+                commands[n_commands] = buffer[0];
+                n_commands++;
+            }
+        }
+    }
 
     while (1) {
         //debug("Main loop iteration\n");
@@ -117,34 +133,21 @@ int main(int argc, char *argv[]) {
         pthread_mutex_unlock(&mutex);
         
         if (cmd_fp) {
-            // Input from file
-            ch = fgetc(cmd_fp);
-
-            if (ch == EOF) {
-                // Restart at the start of the file
-                rewind(cmd_fp);
-                continue;
-            }
-
-            command = (char)ch;
-
-            if (command == '\n' || command == '\r' || command == '\0')
-                continue;
-
-            command = toupper(command);
-            
-            // Wait for tempo, to not overflow pipe with requests
-            pthread_mutex_lock(&mutex);
-            int wait_for = tempo;
-            pthread_mutex_unlock(&mutex);
-
-            sleep_ms(wait_for);
-            
-        } else {
+            command = commands[curr_command_index % n_commands];
+            curr_command_index++;            
+        } 
+        else {
             // Interactive input
             command = get_input();
             command = toupper(command);
         }
+
+        // Wait for tempo, to not overflow pipe with requests
+        pthread_mutex_lock(&mutex);
+        int wait_for = tempo;
+        pthread_mutex_unlock(&mutex);
+
+        sleep_ms(wait_for);
 
         if (command == 'Q') {
             debug("Client pressed 'Q', quitting game\n");

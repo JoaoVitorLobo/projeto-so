@@ -87,7 +87,6 @@ int pacman_connect(char const id_client, char const *req_pipe_path, char const *
         session.req_pipe_fd = req_pipe_fd;
 
     }
-    sleep_ms(10); // Small delay to ensure pipe is ready
 
     char msg[2];
     msg[0] = (char)('0' + OP_CODE_PLAY);

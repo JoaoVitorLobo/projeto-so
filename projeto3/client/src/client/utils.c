@@ -23,3 +23,16 @@ ssize_t write_full(int fd, const void *buf, size_t size) {
     }
     return total;
 }
+
+int read_line(int file, char* buffer){
+    char c;
+    int i = 0;
+    while (read(file, &c, 1) > 0 && c != '\n' && c!= '\0') {
+        buffer[i++] = c;
+    }
+
+    if(i > 0){
+        buffer[i] = '\0';
+    }
+    return i;
+}
