@@ -1,5 +1,5 @@
 DIM 10 10
-TEMPO 300
+TEMPO 500
 #PAC pacman1.p
 MON monster1.m monster2.m
 XXXXXXXXXX

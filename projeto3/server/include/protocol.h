@@ -15,8 +15,10 @@ enum {
 };
 
 ssize_t read_full(int fd, void *buf, size_t size) {
+    debug("read_full: fd=%d size=%zu\n", fd, size);
     size_t total = 0;
     while (total < size) {
+        debug("in_loop\n");
         ssize_t n = read(fd, (char*)buf + total, size - total);
         if (n <= 0){ 
             if(errno == EINTR){
