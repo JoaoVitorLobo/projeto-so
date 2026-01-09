@@ -344,7 +344,11 @@ void create_all_ghosts_threads(pthread_t *ghost_tids, board_t *game_board, int* 
     }
 }
 
-
+void join_all_ghosts_threads(pthread_t *ghost_tids, int n_ghosts) {
+    for (int i = 0; i < n_ghosts; i++) {
+        pthread_join(ghost_tids[i], NULL);
+    }
+}
 
 void* individual_session_thread(void *session_args) {
     sigset_t set;
@@ -417,23 +421,21 @@ void* individual_session_thread(void *session_args) {
                 create_ncurses_thread(&ncurses_tid, &game_board, &victory, &game_over, &accumulated_points, client_notification_fd);
 
                 while(true) {
-                    int *retval;
-                    pthread_join(pacman_tid, (void**)&retval); // ele não pode ficar à espera do pacman acabar, pois assim só dá refresh quando acaba/troca de nivel
+                    int *retval_pacman;
+
+                    pthread_join(pacman_tid, (void**)&retval_pacman); 
 
                     pthread_rwlock_wrlock(&game_board.state_lock);
                     level_thread_shutdown = 1;
                     game_board.session_active = false;
                     pthread_rwlock_unlock(&game_board.state_lock);
 
-                    for (int i = 0; i < game_board.n_ghosts; i++) {
-                        pthread_join(ghost_tids[i], NULL);
-                    }
-                    
+                    join_all_ghosts_threads(ghost_tids, game_board.n_ghosts);
                     
                     pthread_join(ncurses_tid, NULL);
 
-                    int result = *retval;
-                    free(retval);
+                    int result = *retval_pacman;
+                    free(retval_pacman);
 
                     if(result == NEXT_LEVEL) {
                         screen_refresh(&game_board, DRAW_WIN);
