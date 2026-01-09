@@ -29,7 +29,6 @@
 volatile sig_atomic_t sigusr1_received = 0;
 
 void handle_sigusr1() {
-    debug("SIGUSR1 received\n");
     sigusr1_received = 1;
 }
 
@@ -95,30 +94,29 @@ int create_backup() {
 
         return child;
     } else {
-        debug("[%d] Created\n", getpid());
-
         return 0;
     }
 }
 
 void screen_refresh(board_t * game_board, int mode) {
-    //debug("REFRESH\n");
     draw_board(game_board, mode);
     refresh_screen();     
 }
 
 void* ncurses_thread(void *arg) {
-    debug("ncurses_thread arg=%p\n", arg);
     sigset_t set;
     sigemptyset(&set);
     sigaddset(&set, SIGUSR1);
     pthread_sigmask(SIG_BLOCK, &set, NULL);
+
     ncurses_thread_arg_t *ncurses_arg = (ncurses_thread_arg_t*) arg;
     board_t *board = ncurses_arg->board;
     int* victory = ncurses_arg->victory;
     int* game_over = ncurses_arg->game_over;
     int* accumulated_points = ncurses_arg->accumulated_points;
     int client_notification_fd = ncurses_arg->client_notification_fd;
+
+    free(ncurses_arg);
 
     while (board->session_active) {
         sleep_ms(board->tempo);
@@ -129,7 +127,6 @@ void* ncurses_thread(void *arg) {
         board_to_message(message, board, *victory, *game_over, *accumulated_points);
         pthread_rwlock_unlock(&board->state_lock);
 
-        debug("WRITING IN: %d\n", client_notification_fd);
         write_full(client_notification_fd, message, data_size);
     }
     return NULL;
@@ -140,15 +137,15 @@ void* pacman_thread(void *arg) {
     sigemptyset(&set);
     sigaddset(&set, SIGUSR1);
     pthread_sigmask(SIG_BLOCK, &set, NULL);
-    pacman_thread_arg_t *pacman_arg = (pacman_thread_arg_t*) arg;
 
+    pacman_thread_arg_t *pacman_arg = (pacman_thread_arg_t*) arg;
     board_t *board = pacman_arg->board;
     int client_request_fd = pacman_arg->client_request_fd;
     int* points = pacman_arg->points;
 
+    free(pacman_arg);
 
     pacman_t* pacman = &board->pacmans[0];
-    debug("PACMAN THREAD\n");
 
     int *retval = malloc(sizeof(int));
 
@@ -162,30 +159,21 @@ void* pacman_thread(void *arg) {
         ssize_t n;
         n = read_full(client_request_fd, buffer, 1);
         if (n != 1) {
-            debug("Failed to read opcode (n=%zd)\n", n);
             return (void*) retval;
         }
 
         int op_code = buffer[0] - '0';
-        debug("OPCODE FROM PLAY %c\n", buffer[0]);
 
         if(op_code == OP_CODE_DISCONNECT){
-            debug("Receiving disconnect message (1 bytes): op=%c\n", buffer[0]);
             *retval = QUIT_GAME;
             return (void*) retval;
         }
-        debug("pacman_thread\n");
         n = read_full(client_request_fd, buffer, 1);
         if (n != 1) {
-            debug("Failed to read command (n=%zd)\n", n);
             return (void*) retval;
         }
 
-        debug("COMMAND FROM PLAY %c\n", buffer[0]);
-        debug("comand read\n");
-
         char command = buffer[0];
-        debug("Receiving play message (2 bytes): op=%d command=%c\n", op_code, command);
 
         command_t* play;
         command_t c;
@@ -193,9 +181,6 @@ void* pacman_thread(void *arg) {
         c.command = command;
         c.turns = 1;
         play = &c;
-
-
-        debug("KEY %c\n", play->command);
 
         // KEEP PLAYING - just continue without moving
         if (play->command == 'K') {
@@ -214,7 +199,6 @@ void* pacman_thread(void *arg) {
         }
 
         pthread_rwlock_rdlock(&board->state_lock);
-        debug("Pacman is shmooving\n", n);
         int result = move_pacman(board, 0, play);
         *points = pacman->points;
         pthread_rwlock_unlock(&board->state_lock);
@@ -245,6 +229,9 @@ void* ghost_thread(void *arg) {
     board_t *board = ghost_arg->board;
     int ghost_ind = ghost_arg->ghost_index;
     int *thread_shutdown = ghost_arg->thread_shutdown;
+
+    free(ghost_arg);
+
     sigset_t set;
     sigemptyset(&set);
     sigaddset(&set, SIGUSR1);
@@ -256,7 +243,6 @@ void* ghost_thread(void *arg) {
         sleep_ms(board->tempo * (1 + ghost->passo));
 
         pthread_rwlock_rdlock(&board->state_lock);
-        debug("Ghost %d moving\n", ghost_ind);
         if (*thread_shutdown) {
             pthread_rwlock_unlock(&board->state_lock);
             pthread_exit(NULL);
@@ -268,41 +254,31 @@ void* ghost_thread(void *arg) {
 }
 
 void board_to_message(char *message, board_t* game_board, int victory, int game_over, int accumulated_points) {
-    int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board->width * game_board->height);
     char *ptr = message;
 
-    // op_code (1 byte)
-    ptr[0] = (char)('0' + OP_CODE_BOARD); //OP_CODE_BOARD
+    ptr[0] = (char)('0' + OP_CODE_BOARD); 
     ptr += 1;
 
-    // width
     memcpy(ptr, &game_board->width, sizeof(int));
     ptr += sizeof(int);
 
-    // height
     memcpy(ptr, &game_board->height, sizeof(int));
     ptr += sizeof(int);
 
-    // tempo
     memcpy(ptr, &game_board->tempo, sizeof(int));
     ptr += sizeof(int);
 
-    // victory
     int vic = victory;
     memcpy(ptr, &vic, sizeof(int));
     ptr += sizeof(int);
 
-    // game_over
     int eg = game_over;
     memcpy(ptr, &eg, sizeof(int));
     ptr += sizeof(int);
 
-    // accumulated_points
     memcpy(ptr, &accumulated_points, sizeof(int));
     ptr += sizeof(int);
 
-    // board data (width * height bytes)
-    //memcpy(ptr, game_board->board, game_board->width * game_board->height);
     for (int i = 0; i < game_board->width * game_board->height; i++) {
         switch(game_board->board[i].content) {
             case 'W':
@@ -325,16 +301,50 @@ void board_to_message(char *message, board_t* game_board, int victory, int game_
                 break;
         }
     }
+}
 
+void create_ncurses_thread(pthread_t *ncurses_tid, board_t *game_board, int* victory, int* game_over, int* accumulated_points, int client_notification_fd){
+    ncurses_thread_arg_t *ncurses_arg = malloc(sizeof(ncurses_thread_arg_t));
+    if (ncurses_arg == NULL) {
+        perror("malloc ncurses_arg");
+        return;
+    }
+    ncurses_arg->board = game_board;
+    ncurses_arg->victory = victory;
+    ncurses_arg->game_over = game_over;
+    ncurses_arg->accumulated_points = accumulated_points;
+    ncurses_arg->client_notification_fd = client_notification_fd;
+    pthread_create(ncurses_tid, NULL, ncurses_thread, ncurses_arg);
+}
 
-    debug("Sending update message to notifications (%d bytes): op=%c width=%d height=%d tempo: %d victory: %d game_over: %d accumulated_points: %d\n", data_size, message[0], game_board->width, game_board->height, game_board->tempo, vic, eg, accumulated_points);
-    for (int lin = 0; lin < game_board->height; lin++) {
-        for (int col = 0; col < game_board->width; col++) {
-            debug("%c", game_board->board[lin * game_board->width + col].content);
+void create_pacman_thread(pthread_t *pacman_tid, board_t *game_board, int* accumulated_points, int client_request_fd){
+    pacman_thread_arg_t* pacman_arg = malloc(sizeof(pacman_thread_arg_t));
+    if (pacman_arg == NULL) {
+        perror("malloc pacman_arg");
+        return;
+    }
+    pacman_arg->board = game_board;
+    pacman_arg->points = accumulated_points;
+    pacman_arg->client_request_fd = client_request_fd;
+
+    pthread_create(pacman_tid, NULL, pacman_thread, pacman_arg);
+}
+
+void create_all_ghosts_threads(pthread_t *ghost_tids, board_t *game_board, int* level_thread_shutdown){
+    for (int i = 0; i < game_board->n_ghosts; i++) {
+        ghost_thread_arg_t *ghost_arg = malloc(sizeof(ghost_thread_arg_t));
+        if (ghost_arg == NULL) {
+            perror("malloc ghost_arg");
+            continue;
         }
-        debug("\n");
+        ghost_arg->board = game_board;
+        ghost_arg->ghost_index = i;
+        ghost_arg->thread_shutdown = level_thread_shutdown;
+        pthread_create(&ghost_tids[i], NULL, ghost_thread, (void*) ghost_arg);
     }
 }
+
+
 
 void* individual_session_thread(void *session_args) {
     sigset_t set;
@@ -351,8 +361,6 @@ void* individual_session_thread(void *session_args) {
     sem_t* empty = thread_arg->empty;
 
     DIR* level_dir = opendir(level_dir_name);
-
-    debug("INDIVIDUAL SESSION THREAD\n");
     
     while(true) {
         client_pipes_t client_pipe_data = dequeue(client_queue, queue_mutex, items, empty);
@@ -362,10 +370,7 @@ void* individual_session_thread(void *session_args) {
 
         pthread_mutex_lock(thread_arg->session_mutex);
         sscanf(client_request_pipe, "/tmp/%d_request", &thread_arg->client_id);
-        debug("======================================\n");
         pthread_mutex_unlock(thread_arg->session_mutex);
-
-        debug("!! New Client Playing !!: resquest: %s  //  notif: %s\n", client_request_pipe, client_notification_pipe);
 
         char message[2];
         message[0] = (char)('0' + OP_CODE_CONNECT);
@@ -378,7 +383,6 @@ void* individual_session_thread(void *session_args) {
             return NULL;
         }
         message[1] = '0'; 
-        debug("Sending return message to connect (2 bytes): op=%c result=%c\n", message[0], message[1]);
         write_full(client_notification_fd, message, sizeof(message));
         int accumulated_points = 0;
         int end_game = 0;
@@ -404,44 +408,17 @@ void* individual_session_thread(void *session_args) {
                 pthread_t *ghost_tids = malloc(game_board.n_ghosts * sizeof(pthread_t));
 
                 int level_thread_shutdown = 0;
+                game_board.session_active = true; 
 
-                debug("Creating threads\n");
+                create_pacman_thread(&pacman_tid, &game_board, &accumulated_points, client_request_fd);
 
-                pacman_thread_arg_t* pacman_arg = malloc(sizeof(pacman_thread_arg_t));
-                pacman_arg->board = &game_board;
-                pacman_arg->client_request_fd = client_request_fd;
-                pacman_arg->points = &accumulated_points;
+                create_all_ghosts_threads(ghost_tids, &game_board, &level_thread_shutdown);
 
-                pthread_create(&pacman_tid, NULL, pacman_thread, pacman_arg);
-                debug("Created pacman thread\n");
-                for (int i = 0; i < game_board.n_ghosts; i++) {
-                    ghost_thread_arg_t *arg = malloc(sizeof(ghost_thread_arg_t));
-                    arg->board = &game_board;
-                    arg->ghost_index = i;
-                    arg->thread_shutdown = &level_thread_shutdown;
-                    pthread_create(&ghost_tids[i], NULL, ghost_thread, (void*) arg);
-                }
-                debug("Created ghost threads\n");
-                
-                game_board.session_active = true;
-
-                ncurses_thread_arg_t *ncurses_arg = malloc(sizeof(ncurses_thread_arg_t));
-                if (ncurses_arg == NULL) {
-                    perror("malloc ncurses_arg");
-                    level_thread_shutdown = 1;
-                    break;
-                }
-                ncurses_arg->board = &game_board;
-                ncurses_arg->victory = &victory;
-                ncurses_arg->game_over = &game_over;
-                ncurses_arg->accumulated_points = &accumulated_points;
-                ncurses_arg->client_notification_fd = client_notification_fd;
-                pthread_create(&ncurses_tid, NULL, ncurses_thread, ncurses_arg);
+                create_ncurses_thread(&ncurses_tid, &game_board, &victory, &game_over, &accumulated_points, client_notification_fd);
 
                 while(true) {
                     int *retval;
                     pthread_join(pacman_tid, (void**)&retval); // ele não pode ficar à espera do pacman acabar, pois assim só dá refresh quando acaba/troca de nivel
-                    debug("Pacman thread joined\n");
 
                     pthread_rwlock_wrlock(&game_board.state_lock);
                     level_thread_shutdown = 1;
@@ -454,41 +431,29 @@ void* individual_session_thread(void *session_args) {
                     
                     
                     pthread_join(ncurses_tid, NULL);
-                    debug("Ghost threads joined\n");
 
                     int result = *retval;
-                    debug("Freed pacman retval\n");
                     free(retval);
-
-                    debug("Result from pacman thread: %d\n", result);
 
                     if(result == NEXT_LEVEL) {
                         screen_refresh(&game_board, DRAW_WIN);
                         sleep_ms(game_board.tempo);
                         if (current_level >= total_levels) {
-                            debug("All levels completed. Victory! current_level=%d total_levels=%d\n", current_level, total_levels);
                             end_game = 1;
-                            debug("victory = 1\n");
                             victory = 1;
                         }
-                        debug("returned-5\n");
                         break;
                     }
 
                     if(result == CREATE_BACKUP) {
-                        debug("CREATE_BACKUP\n");
                         if (parent_process == getpid()) {
-                            debug("PARENT\n");
                             pid_t child = create_backup();
                             if (child == -1) {
                                 // failed to fork
-                                debug("[%d] Failed to create backup\n", getpid());
                                 end_game = true;
-                                debug("returned-4\n");
                                 break;
                             }
                             if (child > 0) {
-                                debug("Parent process\n");
                                 int status;
                                 wait(&status);
 
@@ -497,21 +462,16 @@ void* individual_session_thread(void *session_args) {
                                     
                                     if (code == 1) {
                                         terminal_init();
-                                        debug("[%d] Save Resuming...\n", getpid());
                                     }
                                     else { // End game or error
                                         end_game = true;
-                                        debug("returned-3\n");
                                         break;
                                     }
                                 }
                             } else {
                                 terminal_init();
-                                debug("Child process\n");
                             }
 
-                        } else {
-                            debug("[%d] Only parent process can have a save\n", getpid());
                         }
                     }
 
@@ -524,10 +484,8 @@ void* individual_session_thread(void *session_args) {
 
                             if (closedir(level_dir) == -1) {
                                 fprintf(stderr, "Failed to close directory\n");
-                                debug("returned-2\n");
                                 continue;
                             }
-                            debug("returned-1\n");
                             continue;
                         } else {
                             // No backup process, game over
@@ -538,23 +496,15 @@ void* individual_session_thread(void *session_args) {
                     if(result == QUIT_GAME) {
                         screen_refresh(&game_board, DRAW_GAME_OVER); 
                         sleep_ms(game_board.tempo);
-                        debug("game over = 1\n");
                         game_over = 1;
                         end_game = true;
                         game_board.session_active = false;
-                        debug("QUIT_GAME\n");
                         break;
                     }
 
                     free(ghost_tids);
-                    debug("Freed ghost tids\n");
-                    free(pacman_arg);
-                    debug("Freed pacman arg\n");
-                    free(ncurses_arg);
-                    debug("Freed ncurses arg\n");
                     
                     accumulated_points = game_board.pacmans[0].points;
-                    debug("Accumulated points: %d\n", accumulated_points);
 
                 }
                 int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
@@ -562,7 +512,6 @@ void* individual_session_thread(void *session_args) {
 
                 board_to_message(message, &game_board, victory, game_over, accumulated_points);
 
-                debug("WRITING IN: %d\n", client_notification_fd);
                 write_full(client_notification_fd, message, data_size);
                 
                 unload_level(&game_board);
@@ -572,7 +521,6 @@ void* individual_session_thread(void *session_args) {
         close(client_notification_fd);
         
         rewinddir(level_dir);
-        debug("!! New Slot Available for New Client !!\n");
     }
     if (level_dir != NULL) {
         closedir(level_dir);
@@ -611,20 +559,9 @@ void enqueue(register_queue_t* register_queue, pthread_mutex_t* queue_mutex, sem
     strcpy(pipe_data.client_request_pipe, req);
     strcpy(pipe_data.client_notification_pipe, notif);
 
-    debug("!! New Client In Queue !!: resquest: %s  //  notif: %s\n", req, notif);
-    
-    debug("\nnew queue:\n");
     register_queue->pipe_data[register_queue->tail] = pipe_data;
     register_queue->tail = (register_queue->tail + 1) % QUEUE_SIZE;
 
-    for (int i = 0; i < register_queue->tail; i++) {
-        if(i == register_queue->head) {
-            debug("HEAD->");
-        }
-        debug(" [%d]: req=%s, notif=%s;\n", i, register_queue->pipe_data[i].client_request_pipe, register_queue->pipe_data[i].client_notification_pipe);
-    }
-    debug("\n");
-    
     pthread_mutex_unlock(queue_mutex);
     sem_post(items);  // sinaliza novo item
 }
@@ -636,8 +573,6 @@ client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_
     client_pipes_t c = register_queue->pipe_data[register_queue->head];
     register_queue->head = (register_queue->head + 1) % QUEUE_SIZE;
 
-    debug("!! New Client Out of Queue!!: resquest: %s  //  notif: %s\n", c.client_request_pipe, c.client_notification_pipe);
-    
     pthread_mutex_unlock(queue_mutex);
     sem_post(empty);  
     return c;
@@ -646,7 +581,6 @@ client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_
 void write_top5_points(session_thread_arg_t* session_args, int max_games) {
     int top5_file = open("top5.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (top5_file < 0) {
-        debug("open top5.txt");
         return;
     }
     int top[5][2] = {{0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}};
@@ -658,7 +592,6 @@ void write_top5_points(session_thread_arg_t* session_args, int max_games) {
         score = session_args[i].points;
         id = session_args[i].client_id;
         pthread_mutex_unlock(session_args[i].session_mutex);
-        debug("Client %d has %d points===\n", session_args[i].client_id, session_args[i].points);
         for(int j = 0; j < 5; j++) {
             if (score > top[j][0] || (top[j][1] != -1 && 0 == top[j][0])) {
                 for(int k = 4; k > j; k--) {
@@ -702,7 +635,6 @@ int main(int argc, char** argv) {
     srand((unsigned int)time(NULL));
     open_debug_file("debug_server.log");
 
-    debug("opening level dir: %s\n", argv[1]);
     DIR* level_dir = opendir(argv[1]);
     if (level_dir == NULL) {
         perror("opendir");
@@ -738,7 +670,6 @@ int main(int argc, char** argv) {
         session_args[id_thread].points = 0;
         session_args[id_thread].client_id = -1;
 
-        debug("BEFORE Creating session manager thread\n");
         pthread_create(&sessions[id_thread], NULL, individual_session_thread, &session_args[id_thread]); //os jogos começam todos 
     }
 
@@ -749,9 +680,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    debug("unlink fifo: %s\n", register_pipe_name);
     unlink(register_pipe_name); // Unlink existing pipe
-    debug("Creating register fifo: %s\n", register_pipe_name);
+
     if(mkfifo(register_pipe_name, 0666) == -1){
         perror("mkfifo");
         return 1;  
@@ -766,15 +696,12 @@ int main(int argc, char** argv) {
 
     while(1){    
         if (sigusr1_received) {
-            debug("Writing top5 points due to SIGUSR1\n");
             write_top5_points(session_args, max_games);
             sigusr1_received = 0;
         }
         char buffer[81];
-        debug("WAITING FOR REGISTER MESSAGE\n");
         errno = 0;
         ssize_t n = read_full(register_pipe_fd, buffer, 81);
-        debug("!! NEW REGISTER MESSAGE!!: op_code=%c request=%s notification=%s\n", buffer[0], buffer + 1, buffer + 41);
         if (n < 0) {
             perror("read register fifo");
             continue; // erro de leitura → continua vivo
