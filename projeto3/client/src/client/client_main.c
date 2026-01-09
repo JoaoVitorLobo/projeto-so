@@ -46,6 +46,7 @@ static void *receiver_thread(void *arg) {
             pthread_mutex_lock(&mutex);
             stop_execution = true;
             pthread_mutex_unlock(&mutex);
+            free(board.data);
             break;
         }
 
@@ -134,20 +135,23 @@ int main(int argc, char *argv[]) {
         
         if (cmd_fp) {
             command = commands[curr_command_index % n_commands];
-            curr_command_index++;            
+            curr_command_index++;    
+            
+            // Wait for tempo, to not overflow pipe with requests
+            pthread_mutex_lock(&mutex);
+            int wait_for = tempo;
+            pthread_mutex_unlock(&mutex);
+
+            sleep_ms(wait_for);
         } 
         else {
             // Interactive input
             command = get_input();
             command = toupper(command);
         }
-
-        // Wait for tempo, to not overflow pipe with requests
-        pthread_mutex_lock(&mutex);
-        int wait_for = tempo;
-        pthread_mutex_unlock(&mutex);
-
-        sleep_ms(wait_for);
+        if (command == '\0') {
+            continue; // No input, continue the loop
+        }
 
         if (command == 'Q') {
             debug("Client pressed 'Q', quitting game\n");
@@ -160,7 +164,10 @@ int main(int argc, char *argv[]) {
         pacman_play(command);
 
     }
+    free(commands);
+
     sleep_ms(1000);
+
     terminal_cleanup();
 
     pacman_disconnect();
