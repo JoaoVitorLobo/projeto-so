@@ -21,9 +21,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void *receiver_thread(void *arg) {
     (void)arg;
 
-    debug("RECEIVER THREAD STARTED\n");
-
-
     while (true) {
         
         Board board = receive_board_update();
@@ -88,17 +85,14 @@ int main(int argc, char *argv[]) {
 
     open_debug_file("client_debug.log");
 
-    debug("BEFORE CONNECT\n");
-
     if (pacman_connect(*client_id, req_pipe_path, notif_pipe_path, register_pipe) != 0) {
         perror("Failed to connect to server");
         return 1;
     }
-    debug("AFTER CONNECT\n");
 
     pthread_t receiver_thread_id;
     pthread_create(&receiver_thread_id, NULL, receiver_thread, NULL);
-    debug("Created receiver thread\n");
+
     terminal_init();
     set_timeout(500);
     draw_board_client(board);
@@ -124,8 +118,6 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
-        //debug("Main loop iteration\n");
-
         pthread_mutex_lock(&mutex);
         if (stop_execution){
             pthread_mutex_unlock(&mutex);
@@ -154,13 +146,8 @@ int main(int argc, char *argv[]) {
         }
 
         if (command == 'Q') {
-            debug("Client pressed 'Q', quitting game\n");
             break;
         }
-
-        debug("Command: %c\n", command);
-
-        debug("Sending command to server: %c\n", command);
         pacman_play(command);
 
     }
@@ -178,7 +165,6 @@ int main(int argc, char *argv[]) {
         fclose(cmd_fp);
 
     pthread_mutex_destroy(&mutex);
-    debug("Cleaning up terminal\n");
     terminal_cleanup();
     close_debug_file();
 
