@@ -388,7 +388,7 @@ void* individual_session_thread(void *session_args) {
         }
         message[1] = '0'; 
         write_full(client_notification_fd, message, sizeof(message));
-        int accumulated_points = 0;
+        int* accumulated_points = &thread_arg->points;
         int end_game = 0;
         int victory = 0;
         int game_over = 0;
@@ -405,7 +405,7 @@ void* individual_session_thread(void *session_args) {
             if (!dot) continue;
 
             if (strcmp(dot, ".lvl") == 0) {
-                load_level(&game_board, entry->d_name, level_dir_name, accumulated_points);
+                load_level(&game_board, entry->d_name, level_dir_name, *accumulated_points);
                 current_level++;
 
                 pthread_t ncurses_tid, pacman_tid;
@@ -414,11 +414,11 @@ void* individual_session_thread(void *session_args) {
                 int level_thread_shutdown = 0;
                 game_board.session_active = true; 
 
-                create_pacman_thread(&pacman_tid, &game_board, &accumulated_points, client_request_fd);
+                create_pacman_thread(&pacman_tid, &game_board, accumulated_points, client_request_fd);
 
                 create_all_ghosts_threads(ghost_tids, &game_board, &level_thread_shutdown);
 
-                create_ncurses_thread(&ncurses_tid, &game_board, &victory, &game_over, &accumulated_points, client_notification_fd);
+                create_ncurses_thread(&ncurses_tid, &game_board, &victory, &game_over, accumulated_points, client_notification_fd);
 
                 while(true) {
                     int *retval_pacman;
@@ -506,13 +506,13 @@ void* individual_session_thread(void *session_args) {
 
                     free(ghost_tids);
                     
-                    accumulated_points = game_board.pacmans[0].points;
+                    *accumulated_points = game_board.pacmans[0].points;
 
                 }
                 int data_size = sizeof(char) + (sizeof(int)*6) + (sizeof(char)* game_board.width * game_board.height);
                 char message[data_size];
 
-                board_to_message(message, &game_board, victory, game_over, accumulated_points);
+                board_to_message(message, &game_board, victory, game_over, *accumulated_points);
 
                 write_full(client_notification_fd, message, data_size);
                 
@@ -582,6 +582,7 @@ client_pipes_t dequeue(register_queue_t* register_queue, pthread_mutex_t* queue_
 
 void write_top5_points(session_thread_arg_t* session_args, int max_games) {
     int top5_file = open("top5.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    debug("%d========\n",top5_file);
     if (top5_file < 0) {
         return;
     }
@@ -593,6 +594,7 @@ void write_top5_points(session_thread_arg_t* session_args, int max_games) {
         pthread_mutex_lock(session_args[i].session_mutex);
         score = session_args[i].points;
         id = session_args[i].client_id;
+        debug("%d-%d\n",score,id);
         pthread_mutex_unlock(session_args[i].session_mutex);
         for(int j = 0; j < 5; j++) {
             if (score > top[j][0] || (top[j][1] != -1 && 0 == top[j][0])) {
@@ -695,8 +697,8 @@ int main(int argc, char** argv) {
         perror("open register fifo");
         return 1;
     }
-
-    while(1){    
+    int leave = 1;
+    while(leave){    
         if (sigusr1_received) {
             write_top5_points(session_args, max_games);
             sigusr1_received = 0;
@@ -717,7 +719,7 @@ int main(int argc, char** argv) {
         char op_code = buffer[0];
         if(op_code != (char)('0' + OP_CODE_CONNECT)){
             perror("op_code");
-            return 1;
+            break;
         }
 
         char client_request_pipe[41];
