@@ -521,6 +521,9 @@ void* individual_session_thread(void *session_args) {
         }
         close(client_request_fd);   
         close(client_notification_fd);
+
+        *accumulated_points = 0;
+        thread_arg->client_id = -1;
         
         rewinddir(level_dir);
     }
@@ -586,7 +589,7 @@ void write_top5_points(session_thread_arg_t* session_args, int max_games) {
     if (top5_file < 0) {
         return;
     }
-    int top[5][2] = {{0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}};
+    int top[5][2] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
     for(int i = 0; i < max_games; i++) {
         int score = 0;
         int id = -1;
@@ -596,8 +599,11 @@ void write_top5_points(session_thread_arg_t* session_args, int max_games) {
         id = session_args[i].client_id;
         debug("%d-%d\n",score,id);
         pthread_mutex_unlock(session_args[i].session_mutex);
+        if (id == -1) {
+            continue;
+        }
         for(int j = 0; j < 5; j++) {
-            if (score > top[j][0] || (top[j][1] != -1 && 0 == top[j][0])) {
+            if (score > top[j][0] && id != top[j][1]) {
                 for(int k = 4; k > j; k--) {
                     top[k][0] = top[k-1][0];
                     top[k][1] = top[k-1][1];
