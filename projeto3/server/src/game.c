@@ -708,6 +708,7 @@ int main(int argc, char** argv) {
         if (sigusr1_received) {
             write_top5_points(session_args, max_games);
             sigusr1_received = 0;
+            break;
         }
         char buffer[81];
         errno = 0;
