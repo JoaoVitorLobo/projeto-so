@@ -619,7 +619,7 @@ void write_top5_points(session_thread_arg_t* session_args, int max_games) {
     for(int j = 0; j < 5; j++) {
         if (top[j][1] != -1) {
             snprintf(buffer,sizeof(buffer), "Client %d: %d points\n", top[j][1], top[j][0]);
-            write(top5_file, buffer, strlen(buffer));
+            write_full(top5_file, buffer, strlen(buffer));
         }
     }
     if(close(top5_file) < 0){
